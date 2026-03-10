@@ -75,7 +75,7 @@ export default function ManajemenBeritaPage() {
         </div>
         
         <Link 
-          href="/dashboardhome/berita/tambah" 
+          href="/dashboardhome/berita/Tambah" 
           className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all shadow-md shadow-red-200"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
