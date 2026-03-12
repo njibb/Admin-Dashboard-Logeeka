@@ -14,7 +14,7 @@ export default function DashboardHomePage() {
       const token = localStorage.getItem("token");
 
       if (!token) {
-        router.push("/login");
+        router.push("/Login");
         return;
       }
 
@@ -29,7 +29,7 @@ export default function DashboardHomePage() {
       // Menjalankan dua request API secara bersamaan untuk efisiensi
       const [beritaRes, portofolioRes] = await Promise.all([
         axios.get("/api/admin/berita/pagination?currentPage=1&dataPerPage=1", config),
-        // Gunakan API publik untuk Portofolio karena di Postman tidak menggunakan bearer token pada bagian ini
+        
         axios.get("/api/project-profile/pagination?currentPage=1&dataPerPage=1")
       ]);
 
@@ -46,7 +46,7 @@ export default function DashboardHomePage() {
       console.error("Gagal mengambil data dashboard:", error);
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         localStorage.removeItem("token");
-        router.push("/login");
+        router.push("Login");
       }
     }
   };
