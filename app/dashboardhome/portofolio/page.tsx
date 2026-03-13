@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
-// ⚠️ ASUMSI TIPE DATA: Nanti kita sesuaikan lagi dengan respon dari Postman Mas Bayu
+// ⚠️ ASUMSI TIPE DATA
 interface Portofolio {
   id: string;
-  judul_portofolio: string; // atau mungkin judul_project?
-  kategori: string;         // atau nama_klien?
-  waktu_posting: string;    // atau created_at?
+  judul_portofolio: string; 
+  kategori: string;        
+  waktu_posting: string;   
 }
 
 export default function ManajemenPortofolioPage() {
@@ -33,8 +33,7 @@ export default function ManajemenPortofolioPage() {
         return;
       }
 
-      // ⚠️ PERHATIAN: Cek Postman Mas Bayu folder "Project Profile" > "get data pagination"
-      // Sesuaikan URL-nya jika berbeda
+     
       const response = await axios.get(
         "/api/project-profile/pagination?currentPage=1&dataPerPage=10&keywords", 
         {
@@ -45,7 +44,7 @@ export default function ManajemenPortofolioPage() {
         }
       );
 
-      // Asumsi letak data di dalam response.data.result.data
+     
       if (response.data && response.data.result && response.data.result.data) {
         setPortofolioData(response.data.result.data);
       } else if (response.data && response.data.data) {
@@ -76,8 +75,7 @@ export default function ManajemenPortofolioPage() {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      // ⚠️ KITA UBAH URL-NYA DI SINI (ADA TAMBAHAN /admin/)
-      // Cek Postman Mas Bayu, kalau ternyata nggak pakai kata "delete", hapus kata "delete/" di bawah ini ya
+     
       await axios.delete(`/api/admin/project-profile/delete/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,

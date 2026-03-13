@@ -10,17 +10,17 @@ export default function EditPortofolioPage() {
   const router = useRouter();
   const { id } = params;
 
-  // State form disesuaikan dengan field dari Postman
+  
   const [title, setTitle] = useState("");
   const [projectUrl, setProjectUrl] = useState("");
   const [categoryCode, setCategoryCode] = useState("marketing_communication");
   
-  // State untuk gambar
+  
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const [isLoading, setIsLoading] = useState(true); // Loading ambil data lama
-  const [isSaving, setIsSaving] = useState(false);  // Loading saat tombol simpan ditekan
+  const [isLoading, setIsLoading] = useState(true); 
+  const [isSaving, setIsSaving] = useState(false);  
   const [errorMsg, setErrorMsg] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -35,7 +35,7 @@ export default function EditPortofolioPage() {
           return;
         }
 
-        // ⚠️ Ini API yang tadi error 400. Kita pasang dulu, nanti tinggal disesuaikan URL-nya
+       
         const response = await axios.get(`/api/admin/project-profile/show/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -45,7 +45,7 @@ export default function EditPortofolioPage() {
 
         const dataAkurat = response.data?.data || response.data?.result || response.data;
         
-        // Memasukkan data lama ke dalam form
+        
         if (dataAkurat) {
           setTitle(dataAkurat.title || "");
           setProjectUrl(dataAkurat.project_url || "");
@@ -56,7 +56,7 @@ export default function EditPortofolioPage() {
         }
       } catch (error) {
         console.error("Gagal mengambil data lama:", error);
-        // Kita tidak set errorMsg mencolok di sini agar user tetap bisa isi form secara manual jika terpaksa
+      
         console.log("Data lama gagal dimuat. Form akan kosong.");
       } finally {
         setIsLoading(false);
@@ -67,7 +67,7 @@ export default function EditPortofolioPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Preview Gambar Baru
+ 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -91,13 +91,12 @@ export default function EditPortofolioPage() {
       formData.append("project_url", projectUrl);
       formData.append("category_code", categoryCode);
       
-      // Kirim file HANYA jika user memilih gambar baru
+    
       if (fileUpload) {
         formData.append("single_thumbnail_upload", fileUpload); 
       }
 
-      // ⚠️ PERHATIAN: Cek Postman "POST update data" di folder Project Profile
-      // Sesuaikan URL-nya jika Mas Bayu memakai format yang berbeda!
+      
       await axios.post(
         `/api/admin/project-profile/update/${id}`, 
         formData,

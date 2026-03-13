@@ -25,8 +25,7 @@ export default function DetailPortofolioPage() {
           return;
         }
 
-        // ⚠️ PERHATIAN: Cek Postman Mas Bayu folder Project Profile > "GET show single data"
-        // Sesuaikan URL-nya jika berbeda (misal: /api/admin/project-profile/${id})
+        
         const response = await axios.get(`/api/admin/project-profile/show/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -34,9 +33,9 @@ export default function DetailPortofolioPage() {
           }
         });
 
-        // Menyimpan data ke state
+        
         const dataAkurat = response.data?.data || response.data?.result || response.data;
-        console.log("ISI DETAIL PORTOFOLIO:", dataAkurat); // Jurus mata-mata
+        console.log("ISI DETAIL PORTOFOLIO:", dataAkurat); 
         setPortofolioDetail(dataAkurat);
 
       } catch (error) {

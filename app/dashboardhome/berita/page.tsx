@@ -63,7 +63,7 @@ export default function ManajemenBeritaPage() {
 
   // ================= FUNGSI DELETE DATA =================
   const handleDelete = async (id: string) => {
-    // Memunculkan pop-up konfirmasi standar browser
+ 
     const confirmDelete = window.confirm("Yakin ingin menghapus berita ini? Data yang dihapus tidak bisa dikembalikan.");
     if (!confirmDelete) return;
 
@@ -74,8 +74,7 @@ export default function ManajemenBeritaPage() {
         return;
       }
 
-      // ⚠️ PERHATIAN: Cek Postman Mas Bayu!
-      // Kalau URL delete-nya beda (misal: /api/admin/berita/delete/id), sesuaikan di bawah ini ya:
+     
       await axios.delete(`/api/admin/berita/delete/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -85,7 +84,7 @@ export default function ManajemenBeritaPage() {
 
       alert("Berita berhasil dihapus!");
       
-      // Panggil ulang fungsi fetchBerita supaya tabel otomatis me-refresh tanpa perlu reload web
+    
       fetchBerita(); 
 
     } catch (error) {

@@ -10,16 +10,16 @@ export default function EditBeritaPage() {
   const router = useRouter();
   const { id } = params;
 
-  // State untuk menyimpan inputan form
+  
   const [judulBerita, setJudulBerita] = useState("");
   const [kontenBerita, setKontenBerita] = useState("");
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   
-  // State untuk menampilkan gambar lama (dari database) atau gambar baru
+ 
   const [imagePreview, setImagePreview] = useState<string | null>(null); 
 
-  const [isLoading, setIsLoading] = useState(true); // Loading saat fetch data awal
-  const [isSaving, setIsSaving] = useState(false);  // Loading saat klik tombol simpan
+  const [isLoading, setIsLoading] = useState(true); 
+  const [isSaving, setIsSaving] = useState(false);  
   const [errorMsg, setErrorMsg] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -34,7 +34,7 @@ export default function EditBeritaPage() {
           return;
         }
 
-        // Asumsi URL get single data Mas Bayu:
+        
         const response = await axios.get(`/api/admin/berita/show/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -44,12 +44,12 @@ export default function EditBeritaPage() {
 
         const dataAkurat = response.data?.data || response.data?.result || response.data;
         
-        // Memasukkan data lama ke dalam form input
+       
         if (dataAkurat) {
           setJudulBerita(dataAkurat.judul_berita || "");
           setKontenBerita(dataAkurat.konten_berita || "");
           if (dataAkurat.file_url) {
-            setImagePreview(dataAkurat.file_url); // Menampilkan gambar lama jika ada
+            setImagePreview(dataAkurat.file_url); 
           }
         }
       } catch (error) {
@@ -64,12 +64,12 @@ export default function EditBeritaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Fungsi saat user pilih gambar baru
+  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setFileUpload(file);
-      setImagePreview(URL.createObjectURL(file)); // Ubah preview jadi gambar baru
+      setImagePreview(URL.createObjectURL(file)); 
     }
   };
 
@@ -86,8 +86,7 @@ export default function EditBeritaPage() {
       const formData = new FormData();
       formData.append("judul_berita", judulBerita);
       formData.append("konten_berita", kontenBerita);
-      // Backend di CI/Laravel biasanya butuh method spoofing jika update via FormData
-      // formData.append("_method", "PUT"); 
+    
       
       // Kirim file HANYA JIKA user mengupload gambar baru
       if (fileUpload) {
@@ -95,8 +94,7 @@ export default function EditBeritaPage() {
         formData.append("single_file_tipe", "MEDIA_FILE");
       }
 
-      // ⚠️ PERHATIAN: Cek Postman Mas Bayu bagian "POST update data"
-      // Sesuaikan URL-nya! Misalnya: /api/admin/berita/update/${id}
+    
       await axios.post(
         `/api/admin/berita/update/${id}`, 
         formData,
