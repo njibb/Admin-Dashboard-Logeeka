@@ -10,43 +10,50 @@ export default function DashboardHomePage() {
   const [totalPortofolio, setTotalPortofolio] = useState<number | string>("...");
 
   const fetchDashboardData = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      router.push("/login"); 
+      return;
+    }
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      }
+    };
+
+    // 1. Fetch Total Berita
     try {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        router.push("/Login");
-        return;
-      }
-
-      // Menyiapkan konfigurasi header untuk API yang membutuhkan otorisasi
-      const config = {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      };
-
-      // Menjalankan dua request API secara bersamaan untuk efisiensi
-      const [beritaRes, portofolioRes] = await Promise.all([
-        axios.get("/api/admin/berita/pagination?currentPage=1&dataPerPage=1", config),
-        
-        axios.get("/api/project-profile/pagination?currentPage=1&dataPerPage=1")
-      ]);
-
-      // Mengambil nilai "count" dari masing-masing response
-      if (beritaRes.data?.result?.count !== undefined) {
-        setTotalBerita(beritaRes.data.result.count);
-      }
+      const urlBerita = "/api/admin/berita/pagination?sortBy=judul_berita&sort=asc&currentPage=1&dataPerPage=10&keywords=";
+      const beritaRes = await axios.get(urlBerita, config);
+      const countBerita = beritaRes.data?.result?.count ?? "0";
       
-      if (portofolioRes.data?.result?.count !== undefined) {
-        setTotalPortofolio(portofolioRes.data.result.count);
-      }
-
+      setTotalBerita(countBerita);
     } catch (error) {
-      console.error("Gagal mengambil data dashboard:", error);
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        localStorage.removeItem("token");
-        router.push("Login");
+      console.error("Failed to fetch Berita count:", error);
+      setTotalBerita("0");
+    }
+
+    // 2. Fetch Total Portofolio
+    try {
+      const urlPorto = "/api/admin/project-profile/pagination?sort=asc&currentPage=1&dataPerPage=10&keywords=";
+      const portofolioRes = await axios.get(urlPorto, config);
+      const countPortofolio = portofolioRes.data?.result?.count ?? "0";
+      
+      setTotalPortofolio(countPortofolio);
+    } catch (error) {
+      console.error("Failed to fetch Portofolio count:", error);
+      
+      // Fallback endpoint
+      try {
+        const urlPortoBackup = "/api/project-profile/pagination?sort=asc&currentPage=1&dataPerPage=10&keywords=";
+        const backupRes = await axios.get(urlPortoBackup, config);
+        
+        setTotalPortofolio(backupRes.data?.result?.count ?? "0");
+      } catch (backupErr) {
+        setTotalPortofolio("0");
       }
     }
   };
@@ -59,11 +66,11 @@ export default function DashboardHomePage() {
   return (
     <div className="relative min-h-screen p-6 sm:p-10 overflow-hidden font-sans bg-[#fff5f5]">
       
-      {/* ================= BACKGROUND MESH GRADIENT ================= */}
+      {/* Background Mesh Gradient */}
       <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-red-300 rounded-full mix-blend-multiply filter blur-[120px] opacity-30 z-0 pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-orange-200 rounded-full mix-blend-multiply filter blur-[120px] opacity-30 z-0 pointer-events-none"></div>
 
-      {/* ================= KONTEN UTAMA ================= */}
+      {/* Konten Utama */}
       <div className="relative z-10 max-w-6xl mx-auto">
         
         {/* Header Teks */}
@@ -76,7 +83,7 @@ export default function DashboardHomePage() {
           </p>
         </div>
 
-        {/* ================= KARTU STATISTIK ================= */}
+        {/* Kartu Statistik */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           
           {/* Kartu 1: Total Berita */}
@@ -112,7 +119,6 @@ export default function DashboardHomePage() {
           </div>
 
         </div>
-
       </div>
     </div>
   );
