@@ -52,7 +52,6 @@ export default function DetailBeritaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // 🔥 Jurus Sapu Jagat yang udah fix digabung sama URL Utama
   let imageUrl = null;
   if (beritaDetail?.single_media_object?.path_media) {
     const baseUrl = 'https://logeeka-magang.mokumuka.com'; 

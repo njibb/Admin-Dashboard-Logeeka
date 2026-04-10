@@ -95,7 +95,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
 
       {/* ================= 3. POP-UP KONFIRMASI LOGOUT ================= */}
-      {/* 🔥 UBAHAN 2: Desain modal box melayang yang persis seperti gambarmu */}
+     
       {showLogoutModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
           
