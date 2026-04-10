@@ -26,7 +26,7 @@ export default function DetailPortofolioPage() {
         }
 
         
-        const response = await axios.get(`/api/admin/project-profile/show/${id}`, {
+      const response = await axios.get(`/api/admin/project-profile/show/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'

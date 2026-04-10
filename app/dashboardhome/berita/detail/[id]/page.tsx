@@ -7,11 +7,10 @@ import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 
 export default function DetailBeritaPage() {
-  const params = useParams(); // Mengambil ID dari URL
+  const params = useParams(); 
   const router = useRouter();
-  const { id } = params; // ID berita yang sedang diklik
+  const { id } = params; 
 
-  // Wadah untuk menyimpan 1 data berita spesifik (pakai any sementara karena struktur detail bisa beda)
   const [beritaDetail, setBeritaDetail] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
@@ -26,8 +25,6 @@ export default function DetailBeritaPage() {
           return;
         }
 
-        // ⚠️ PERHATIAN: Cek Postman Mas Bayu bagian "show single data"
-        // Sesuaikan URL-nya jika berbeda (misal: /api/admin/berita/show/id)
         const response = await axios.get(`/api/admin/berita/show/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -35,8 +32,10 @@ export default function DetailBeritaPage() {
           }
         });
 
-        // Menyimpan data. Asumsi datanya ada di response.data.data atau response.data.result
-        const dataAkurat = response.data?.data || response.data?.result || response.data;
+        const responsData = response.data?.data || response.data?.result || response.data;
+        const dataAkurat = responsData?.berita ? responsData.berita : responsData;
+
+        console.log("ISI DETAIL BERITA:", dataAkurat);
         setBeritaDetail(dataAkurat);
 
       } catch (error) {
@@ -52,6 +51,16 @@ export default function DetailBeritaPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  // 🔥 Jurus Sapu Jagat yang udah fix digabung sama URL Utama
+  let imageUrl = null;
+  if (beritaDetail?.single_media_object?.path_media) {
+    const baseUrl = 'https://logeeka-magang.mokumuka.com'; 
+    imageUrl = `${baseUrl}/${beritaDetail.single_media_object.path_media}`;
+  } else {
+     // Cadangan
+     imageUrl = beritaDetail?.file_url || beritaDetail?.image_url || beritaDetail?.thumbnail_url;
+  }
 
   return (
     <div className="min-h-screen p-6 sm:p-10 font-sans">
@@ -90,10 +99,11 @@ export default function DetailBeritaPage() {
           </div>
         ) : beritaDetail ? (
           <div className="space-y-8">
+            
             {/* Header Detail (Judul & Badge) */}
             <div className="border-b border-gray-100 pb-6">
               <div className="flex flex-wrap items-center gap-3 mb-4">
-                <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold tracking-wider">
+                <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold tracking-wider uppercase">
                   {beritaDetail.asal_data || "MANUAL"}
                 </span>
                 <span className="text-sm text-gray-500 font-medium flex items-center gap-1.5">
@@ -106,21 +116,29 @@ export default function DetailBeritaPage() {
               </h1>
             </div>
 
-            {/* Gambar (Jika Ada) */}
-            {beritaDetail.file_url && (
-              <div className="w-full h-64 sm:h-96 rounded-2xl overflow-hidden border border-gray-200">
+            {/* 🔥 Area Gambar */}
+            {imageUrl ? (
+              <div className="w-full h-64 sm:h-96 rounded-2xl overflow-hidden border border-gray-100 shadow-inner bg-gray-50">
                 <img 
-                  src={beritaDetail.file_url} 
+                  src={imageUrl} 
                   alt={beritaDetail.judul_berita} 
                   className="w-full h-full object-cover"
                 />
+              </div>
+            ) : (
+              <div className="w-full h-64 sm:h-96 rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center p-6 text-center shadow-sm">
+                <div className="flex flex-col items-center gap-4 text-gray-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                  </svg>
+                  <p className="text-xl font-bold text-gray-700">Tidak ada gambar</p>
+                  <p className="text-sm">Gambar tidak tersedia atau URL tidak valid.</p>
+                </div>
               </div>
             )}
 
             {/* Isi Konten */}
             <div className="prose max-w-none text-gray-700 leading-relaxed text-lg">
-              {/* Jika konten berupa HTML, gunakan dangerouslySetInnerHTML. 
-                  Jika berupa teks biasa, langsung tampilkan variabelnya. */}
               {beritaDetail.konten_berita ? (
                  <div dangerouslySetInnerHTML={{ __html: beritaDetail.konten_berita }} />
               ) : (
