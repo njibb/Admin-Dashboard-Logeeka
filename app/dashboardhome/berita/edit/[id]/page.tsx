@@ -50,7 +50,7 @@ export default function EditBeritaPage() {
           // Construct image URL
           let imageUrl = null;
           if (dataAkurat?.single_media_object?.path_media) {
-            const baseUrl = 'https://logeeka-magang.mokumuka.com'; 
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL;
             imageUrl = `${baseUrl}/${dataAkurat.single_media_object.path_media}`;
           } else {
              imageUrl = dataAkurat?.file_url || dataAkurat?.image_url || dataAkurat?.thumbnail_url;

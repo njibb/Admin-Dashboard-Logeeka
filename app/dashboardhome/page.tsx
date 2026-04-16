@@ -9,7 +9,7 @@ export default function DashboardHomePage() {
   const [totalBerita, setTotalBerita] = useState<number | string>("...");
   const [totalPortofolio, setTotalPortofolio] = useState<number | string>("...");
 
-  const fetchDashboardData = async () => {
+ const fetchDashboardData = async () => {
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -38,23 +38,15 @@ export default function DashboardHomePage() {
 
     // 2. Fetch Total Portofolio
     try {
-      const urlPorto = "/api/admin/project-profile/pagination?sort=asc&currentPage=1&dataPerPage=10&keywords=";
+      // 🔥 PERBAIKAN: Hapus /admin/ karena dari Postman jalurnya langsung /api/project-profile/
+      const urlPorto = "/api/project-profile/pagination?sort=asc&currentPage=1&dataPerPage=10&keywords=";
       const portofolioRes = await axios.get(urlPorto, config);
       const countPortofolio = portofolioRes.data?.result?.count ?? "0";
       
       setTotalPortofolio(countPortofolio);
     } catch (error) {
       console.error("Failed to fetch Portofolio count:", error);
-      
-      // Fallback endpoint
-      try {
-        const urlPortoBackup = "/api/project-profile/pagination?sort=asc&currentPage=1&dataPerPage=10&keywords=";
-        const backupRes = await axios.get(urlPortoBackup, config);
-        
-        setTotalPortofolio(backupRes.data?.result?.count ?? "0");
-      } catch (backupErr) {
-        setTotalPortofolio("0");
-      }
+      setTotalPortofolio("0");
     }
   };
 

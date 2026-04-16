@@ -54,7 +54,7 @@ export default function DetailBeritaPage() {
 
   let imageUrl = null;
   if (beritaDetail?.single_media_object?.path_media) {
-    const baseUrl = 'https://logeeka-magang.mokumuka.com'; 
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL; 
     imageUrl = `${baseUrl}/${beritaDetail.single_media_object.path_media}`;
   } else {
      // Cadangan

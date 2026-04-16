@@ -5,7 +5,8 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://logeeka-magang.mokumuka.com/api/:path*',
+        // 🔥 Panggil dari brankas .env kamu!
+        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`, 
       },
     ]
   },

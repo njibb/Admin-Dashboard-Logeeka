@@ -33,9 +33,9 @@ export default function ManajemenPortofolioPage() {
         return;
       }
 
-     
+      
       const response = await axios.get(
-        "/api/project-profile/pagination?currentPage=1&dataPerPage=10&keywords", 
+        "/api/project-profile/pagination?currentPage=1&dataPerPage=100&sort=desc&keywords=", 
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -44,7 +44,7 @@ export default function ManajemenPortofolioPage() {
         }
       );
 
-     
+      
       if (response.data && response.data.result && response.data.result.data) {
         setPortofolioData(response.data.result.data);
       } else if (response.data && response.data.data) {
@@ -65,7 +65,6 @@ export default function ManajemenPortofolioPage() {
       setIsLoading(false); 
     }
   };
-
   // ================= FUNGSI DELETE DATA =================
   const handleDelete = async (id: string) => {
     const confirmDelete = window.confirm("Yakin ingin menghapus portofolio ini? Data yang dihapus tidak bisa dikembalikan.");
@@ -174,17 +173,17 @@ export default function ManajemenPortofolioPage() {
                portofolioData.map((item: any) => (
                   <tr key={item.id} className="hover:bg-red-50/40 transition-colors group">
                     <td className="py-4 px-6 border-b border-gray-100 text-sm font-semibold text-gray-900 max-w-[300px] truncate">
-                      {/* Menggunakan item.title sesuai JSON Mas Bayu */}
+                      
                       {item.title || "Judul Tidak Diketahui"}
                     </td>
                     <td className="py-4 px-6 border-b border-gray-100 text-sm text-gray-600">
                       <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-semibold uppercase">
-                        {/* Menggunakan item.category_code */}
+                     
                         {item.category_code ? item.category_code.replace('_', ' ') : "UMUM"}
                       </span>
                     </td>
                     <td className="py-4 px-6 border-b border-gray-100 text-sm text-gray-600 whitespace-nowrap">
-                      {/* Karena waktu posting tidak ada di JSON, kita beri tanda strip */}
+                      
                       -
                     </td>
                     <td className="py-4 px-6 border-b border-gray-100 text-sm text-center">
