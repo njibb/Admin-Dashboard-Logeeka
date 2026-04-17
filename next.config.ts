@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        // 🔥 Panggil dari brankas .env kamu!
+        
         destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`, 
       },
     ]
