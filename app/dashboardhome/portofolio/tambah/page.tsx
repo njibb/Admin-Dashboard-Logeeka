@@ -5,22 +5,23 @@ import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 export default function TambahPortofolioPage() {
   const router = useRouter();
   
+  // ================= STATE & REFS =================
   const [title, setTitle] = useState("");
   const [projectUrl, setProjectUrl] = useState("");
   const [categoryCode, setCategoryCode] = useState("marketing_communication"); 
-  
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ================= EVENT HANDLERS =================
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -50,7 +51,6 @@ export default function TambahPortofolioPage() {
         formData.append("single_thumbnail_upload", fileUpload); 
       }
 
-      // Simpan hasil response-nya ke dalam variabel 'response'
       const response = await axios.post(
         "/api/admin/project-profile/store", 
         formData,
@@ -61,29 +61,32 @@ export default function TambahPortofolioPage() {
         }
       );
 
-     
       if (response.data?.status === 0 || response.data?.status_code === 400) {
-        console.log("❌ DITOLAK BACKEND:", response.data);
-        
-        // Ekstrak pesan error dari backend kalau ada
-        const pesanError = response.data?.error_list?.[0] || response.data?.message || "Gagal menyimpan. Cek kembali form kamu.";
+        const pesanError = response.data?.error_list?.[0] || response.data?.message || "Gagal menyimpan.";
         setErrorMsg(`Ditolak Server: ${pesanError}`);
         setIsLoading(false);
         return; 
       }
 
-      
-      alert("Portofolio berhasil ditambahkan!");
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Portofolio ditambahkan!',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      });
+
       router.push("/dashboardhome/portofolio");
 
     } catch (error) {
-      console.error("Gagal menambah portofolio:", error);
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
           localStorage.removeItem("token");
           router.push("/login");
         } else {
-          setErrorMsg(error.response?.data?.message || "Gagal menyimpan data ke server. Cek kelengkapan data.");
+          setErrorMsg(error.response?.data?.message || "Gagal menyimpan data ke server.");
         }
       } else {
         setErrorMsg("Terjadi kesalahan jaringan atau sistem.");
@@ -96,7 +99,7 @@ export default function TambahPortofolioPage() {
   return (
     <div className="min-h-screen p-6 sm:p-10 font-sans">
       
-      {/* Header Halaman */}
+      
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -120,11 +123,10 @@ export default function TambahPortofolioPage() {
         </div>
       )}
 
-      {/* Form Area */}
+      
       <div className="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden p-6 sm:p-8 max-w-4xl">
         <form onSubmit={handleSubmit} className="space-y-6">
           
-          {/* Input Judul Project (Sudah diperbaiki pakai label & div) */}
           <div>
             <label className="block text-sm font-black text-black mb-2">Judul Project <span className="text-red-600">*</span></label>
             <input 
@@ -138,8 +140,6 @@ export default function TambahPortofolioPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            {/* Input URL Project (Sudah diperbaiki pakai label & div) */}
             <div>
               <label className="block text-sm font-black text-black mb-2">URL Project <span className="text-red-600">*</span></label>
               <input 
@@ -152,7 +152,6 @@ export default function TambahPortofolioPage() {
               />
             </div>
 
-            {/* Select Kategori */}
             <div>
               <label className="block text-sm font-black text-black mb-2">Kategori Project <span className="text-red-600">*</span></label>
               <select 
@@ -168,10 +167,8 @@ export default function TambahPortofolioPage() {
             </div>
           </div>
 
-          {/* Input Upload Thumbnail */}
           <div>
             <label className="block text-sm font-black text-black mb-2">Upload Thumbnail Project <span className="text-red-600">*</span></label>
-            
             {imagePreview && (
               <div className="mb-4 relative w-full sm:w-64 h-40 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
                 <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
@@ -199,7 +196,7 @@ export default function TambahPortofolioPage() {
             />
           </div>
 
-          {/* Tombol Action */}
+         
           <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
             <Link 
               href="/dashboardhome/portofolio"
@@ -218,7 +215,6 @@ export default function TambahPortofolioPage() {
               {isLoading ? "Menyimpan..." : "Simpan Portofolio"}
             </button>
           </div>
-
         </form>
       </div>
     </div>

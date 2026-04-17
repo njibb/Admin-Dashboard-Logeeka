@@ -4,33 +4,34 @@ import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 export default function TambahBeritaPage() {
   const router = useRouter();
   
-  // State dipisah agar lebih mudah meng-handle File Upload
+ 
   const [judulBerita, setJudulBerita] = useState("");
   const [kontenBerita, setKontenBerita] = useState("");
   const [fileUpload, setFileUpload] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null); // Untuk menampilkan preview gambar
+  const [imagePreview, setImagePreview] = useState<string | null>(null); 
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Referensi untuk mereset input file
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fungsi untuk menangani saat user memilih gambar
+  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setFileUpload(file);
-      // Membuat URL sementara agar user bisa melihat preview gambar yang diupload
+     
       setImagePreview(URL.createObjectURL(file));
     }
   };
 
-  // Fungsi saat tombol "Simpan Berita" ditekan
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -43,7 +44,7 @@ export default function TambahBeritaPage() {
         return;
       }
 
-      // KUNCI RAHASIA: Menggunakan FormData karena kita mengirim File (Gambar)
+      
       const formData = new FormData();
       formData.append("judul_berita", judulBerita);
       formData.append("konten_berita", kontenBerita);
@@ -53,20 +54,28 @@ export default function TambahBeritaPage() {
         formData.append("single_file_upload", fileUpload);
       }
 
-      // Tembak API /store milik Mas Bayu
+      
       await axios.post(
         "/api/admin/berita/store", 
         formData,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
-            // Kita hapus 'Content-Type: application/json' 
-            // Axios otomatis akan mendeteksinya sebagai 'multipart/form-data'
           }
         }
       );
 
-      alert("Berita berhasil ditambahkan!");
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Berita berhasil disimpan!',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      });
+
+      router.push("/dashboardhome/berita");
       router.push("/dashboardhome/berita");
 
     } catch (error) {

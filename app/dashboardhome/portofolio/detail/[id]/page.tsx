@@ -12,16 +12,15 @@ export default function DetailPortofolioPage() {
   const { id } = params; 
 
   const [portofolioDetail, setPortofolioDetail] = useState<any>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null); // State khusus buat nangkep gambar
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState("");
 
- useEffect(() => {
+  // ================= FUNGSI GET DETAIL =================
+  useEffect(() => {
     const fetchDetailPortofolio = async () => {
       if (!id) return; 
 
       setIsLoading(true);
-      setErrorMsg("");
 
       try {
         const token = localStorage.getItem("token");
@@ -37,17 +36,13 @@ export default function DetailPortofolioPage() {
           }
         };
 
-        // 🔥 FIKS: Jalurnya resmi pakai /admin/ (Sesuai dengan Postman)
         const response = await axios.get(`/api/admin/project-profile/show/${id}`, config);
 
-        // Buka kardus datanya
         const responsData = response.data?.data || response.data?.result || response.data;
         const dataAkurat = responsData?.project_profile || responsData?.portofolio || responsData;
         
-        console.log("✅ ISI DETAIL PORTOFOLIO:", dataAkurat); 
         setPortofolioDetail(dataAkurat);
 
-        // Jurus Sapu Jagat Gambar
         if (dataAkurat) {
           const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://logeeka-magang.mokumuka.com';
           let finalImageUrl = null;
@@ -67,13 +62,8 @@ export default function DetailPortofolioPage() {
         }
 
       } catch (error) {
-        
-        if (axios.isAxiosError(error)) {
-          console.log("❌ ERROR DARI SERVER:", error.response?.data);
-          setErrorMsg(`Data Portofolio ini tidak ditemukan atau sudah dihapus dari server.`);
-        } else {
-          setErrorMsg("Gagal memuat detail portofolio. Terjadi kesalahan jaringan.");
-        }
+        console.error("Gagal load detail portofolio", error);
+        setPortofolioDetail(null);
       } finally {
         setIsLoading(false);
       }
@@ -86,7 +76,7 @@ export default function DetailPortofolioPage() {
   return (
     <div className="min-h-screen p-6 sm:p-10 font-sans">
       
-      {/* ================= HEADER HALAMAN ================= */}
+      {/* ================= HEADER ================= */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -104,13 +94,7 @@ export default function DetailPortofolioPage() {
         </div>
       </div>
 
-      {errorMsg && (
-        <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-200 font-bold">
-          {errorMsg}
-        </div>
-      )}
-
-      {/* ================= KONTEN DETAIL ================= */}
+      {/* ================= KONTEN UTAMA ================= */}
       <div className="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden p-6 sm:p-10 max-w-4xl relative">
         
         {isLoading ? (
@@ -119,9 +103,8 @@ export default function DetailPortofolioPage() {
              <p className="text-black font-bold">Sedang memuat detail portofolio...</p>
           </div>
         ) : portofolioDetail ? (
+          
           <div className="space-y-8">
-            
-            {/* Header Detail (Judul & Kategori) */}
             <div className="border-b border-gray-100 pb-6">
               <div className="flex flex-wrap items-center gap-3 mb-4">
                 <span className="px-3 py-1 bg-gray-100 text-black rounded-lg text-xs font-black tracking-wider uppercase border border-gray-200">
@@ -132,7 +115,6 @@ export default function DetailPortofolioPage() {
                 {portofolioDetail.title || portofolioDetail.judul || "Judul Project Tidak Tersedia"}
               </h1>
               
-              {/* Link Project URL */}
               {portofolioDetail.project_url && (
                 <a 
                   href={portofolioDetail.project_url} 
@@ -148,7 +130,6 @@ export default function DetailPortofolioPage() {
               )}
             </div>
 
-            {/* Gambar Thumbnail */}
             {imageUrl ? (
               <div className="w-full h-auto rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
                 <img 
@@ -163,7 +144,6 @@ export default function DetailPortofolioPage() {
               </div>
             )}
 
-            {/* Deskripsi (Jika ada field konten) */}
             {(portofolioDetail.konten || portofolioDetail.deskripsi) && (
               <div className="prose max-w-none text-black">
                 <p className="whitespace-pre-wrap leading-relaxed font-medium">
@@ -171,12 +151,31 @@ export default function DetailPortofolioPage() {
                 </p>
               </div>
             )}
-
           </div>
+          
         ) : (
-          <div className="py-20 text-center text-black font-bold">
-            Data detail tidak ditemukan.
+          
+          // ================= EMPTY STATE KEKINIAN (PORTOFOLIO) =================
+          <div className="py-20 text-center">
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-red-50 p-6 rounded-full mb-6 border border-red-100 shadow-inner">
+                {/* Ikon Dokumen Kosong / Pencarian */}
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-20 h-20 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9zm3.75 11.625a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-black text-gray-900 mb-2">Waduh, Project-nya Ngilang! 🕵️‍♂️</h3>
+              <p className="text-gray-500 max-w-md mb-8 font-medium">Data detail portofolio yang kamu cari tidak ditemukan atau mungkin sudah dihapus permanen dari server Logeeka.</p>
+              <Link 
+                href="/dashboardhome/portofolio"
+                className="px-6 py-2.5 bg-black hover:bg-gray-800 text-white font-bold rounded-xl transition-all shadow-md flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
+                Kembali ke Daftar Portofolio
+              </Link>
+            </div>
           </div>
+          
         )}
 
       </div>
