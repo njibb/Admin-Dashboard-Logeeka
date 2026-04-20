@@ -2,7 +2,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+// 1. Ganti axios dengan signIn dari next-auth
+import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -24,41 +25,27 @@ export default function LoginPage() {
       const cleanEmail = email.trim();
       const cleanPassword = password.trim();
 
-      const response = await axios.post(
-        "/api/auth/login", 
-        {
-          params: {
-            email: cleanEmail,
-            password: cleanPassword
-          }
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        }
-      );
+      // 2. Gunakan fungsi signIn NextAuth, arahkan ke provider "credentials"
+      const result = await signIn("credentials", {
+        redirect: false, // Jangan otomatis redirect kalau gagal, biar kita bisa tangkap errornya
+        username: cleanEmail, // Di nextauth kita nyebutnya username (lihat route.ts), tapi isinya email
+        password: cleanPassword,
+      });
 
-      const token = response.data?.data?.token;
-      
-      if (token) {
-        localStorage.setItem("token", token);
+      // 3. Cek hasil dari next-auth
+      if (result?.error) {
+        // Kalau gagal login (password salah / email gak ada)
+        setErrorMsg("Login gagal. Periksa kembali email dan password Anda.");
+      } else if (result?.ok) {
+        // Kalau sukses, token otomatis kesimpen di cookies, langsung gass ke dashboard!
         router.push("/dashboardhome");
-      } else {
-        setErrorMsg("Login berhasil, tapi sistem tidak menemukan token.");
+        // Opsional: router.refresh() biar state di server ikut ke-update
+        router.refresh(); 
       }
 
     } catch (error) {
       console.error("Error Login:", error);
-      
-      if (axios.isAxiosError(error)) {
-        const serverMessage = error.response?.data?.message;
-        setErrorMsg(serverMessage || "Gagal login. Kredensial salah atau server menolak.");
-      } else {
-        setErrorMsg("Terjadi kesalahan pada jaringan.");
-      }
-      
+      setErrorMsg("Terjadi kesalahan sistem yang tidak terduga.");
     } finally {
       setIsLoading(false);
     }

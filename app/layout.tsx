@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Providers } from "./Providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,8 +14,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
-      <body>
-        {children}
+      <body className="antialiased">
+        {/* 🔥 Bungkus children dengan Providers di sini */}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
