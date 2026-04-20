@@ -1,25 +1,25 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { useSession, signOut } from "next-auth/react";
-// 🔥 Import Komponen Recharts
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, Legend 
 } from 'recharts';
 
-// ================= KOMPONEN EFEK ANGKA ACAK =================
+
 const ScrambleNumber = ({ value }: { value: string | number }) => {
   const [display, setDisplay] = useState<string | number>("...");
 
   useEffect(() => {
-    if (value === "...") return; 
-    let duration = 800; 
-    let interval = 40;  
-    let elapsed = 0;
-
+  if (value === "...") return;
+  const duration = 800; 
+  const interval = 40; 
+  let elapsed = 0;     
+  
+  
     const timer = setInterval(() => {
       elapsed += interval;
       if (elapsed >= duration) {
@@ -36,8 +36,8 @@ const ScrambleNumber = ({ value }: { value: string | number }) => {
   return <span>{display}</span>;
 };
 
-// 🔥 Warna warni untuk grafik Donat
 const COLORS = ['#dc2626', '#f97316', '#f59e0b', '#ef4444', '#84cc16'];
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
 
 export default function DashboardHomePage() {
   const router = useRouter();
@@ -46,11 +46,14 @@ export default function DashboardHomePage() {
   const [totalBerita, setTotalBerita] = useState<number | string>("...");
   const [totalPortofolio, setTotalPortofolio] = useState<number | string>("...");
 
-  // 🔥 State untuk nyimpen data asli buat grafik
+  
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [trendData, setTrendData] = useState<any[]>([]);
+  const [rawBerita, setRawBerita] = useState<any[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [categoryData, setCategoryData] = useState<any[]>([]);
+  const [rawPortofolio, setRawPortofolio] = useState<any[]>([]);
+
+  // State untuk Filter Tahun Berita
+  const [selectedYear, setSelectedYear] = useState<string>("Semua");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -68,7 +71,6 @@ export default function DashboardHomePage() {
     };
 
     try {
-      // 🔥 Ambil data lebih banyak (100) biar grafiknya kelihatan bentuknya
       const urlBerita = "/api/admin/berita/pagination?sortBy=waktu_posting&sort=desc&currentPage=1&dataPerPage=100&keywords=";
       const urlPorto = "/api/project-profile/pagination?sort=desc&currentPage=1&dataPerPage=100&keywords=";
       
@@ -77,37 +79,13 @@ export default function DashboardHomePage() {
         axios.get(urlPorto, config).catch(() => null)
       ]);
 
-      // --- PROSES DATA BERITA ---
       const listBerita = beritaRes?.data?.result?.data || [];
+      setRawBerita(listBerita);
       setTotalBerita(beritaRes?.data?.result?.count ?? listBerita.length ?? "0");
 
-      // --- PROSES DATA PORTOFOLIO ---
       const listPorto = portofolioRes?.data?.result?.data || portofolioRes?.data?.data || [];
+      setRawPortofolio(listPorto);
       setTotalPortofolio(portofolioRes?.data?.result?.count ?? listPorto.length ?? "0");
-
-      // ================= OLAH DATA UNTUK GRAFIK =================
-      
-      // 1. Olah Data Kategori Portofolio (Untuk Donat Chart)
-      const catCounts: Record<string, number> = {};
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      listPorto.forEach((item: any) => {
-        const cat = item.category_code ? item.category_code.replace('_', ' ').toUpperCase() : "UMUM";
-        catCounts[cat] = (catCounts[cat] || 0) + 1;
-      });
-      const formattedCategoryData = Object.keys(catCounts).map(key => ({
-        name: key, value: catCounts[key]
-      }));
-      setCategoryData(formattedCategoryData);
-
-      // 2. Olah Data Tren (Untuk Line Chart) - Simulasi dari tanggal posting
-      // Karena API kadang nggak ngasih tanggal spesifik, kita kelompokkan sederhana
-      const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun"];
-      const trendBulanan = months.map(bulan => ({
-        name: bulan,
-        Berita: Math.floor(Math.random() * 10) + (listBerita.length > 0 ? 2 : 0), // Mix data asli & dummy agar chart tidak kosong melompong
-        Portofolio: Math.floor(Math.random() * 5) + (listPorto.length > 0 ? 1 : 0)
-      }));
-      setTrendData(trendBulanan);
 
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
@@ -121,6 +99,56 @@ export default function DashboardHomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, session]);
 
+ 
+  
+  const availableYears = useMemo(() => {
+    const years = new Set<string>();
+    rawBerita.forEach(item => {
+      if (item.waktu_posting) {
+        const year = item.waktu_posting.substring(0, 4); 
+        if (!isNaN(Number(year))) years.add(year);
+      }
+    });
+    return Array.from(years).sort().reverse(); 
+  }, [rawBerita]);
+
+  
+  const trendData = useMemo(() => {
+    const monthsCount = Array(12).fill(0); // Bikin array [0, 0, ..., 0] isi 12
+
+    rawBerita.forEach(item => {
+      if (!item.waktu_posting) return;
+      const year = item.waktu_posting.substring(0, 4);
+      const monthIdx = parseInt(item.waktu_posting.substring(5, 7), 10) - 1; 
+
+     
+      if (selectedYear === "Semua" || year === selectedYear) {
+        if (monthIdx >= 0 && monthIdx <= 11) {
+          monthsCount[monthIdx] += 1;
+        }
+      }
+    });
+
+    
+    return MONTH_NAMES.map((month, index) => ({
+      name: month,
+      Berita: monthsCount[index]
+    }));
+  }, [rawBerita, selectedYear]);
+
+ 
+  const categoryData = useMemo(() => {
+    const catCounts: Record<string, number> = {};
+    rawPortofolio.forEach(item => {
+      const cat = item.category_code ? item.category_code.replace('_', ' ').toUpperCase() : "UMUM";
+      catCounts[cat] = (catCounts[cat] || 0) + 1;
+    });
+    return Object.keys(catCounts).map(key => ({
+      name: key, value: catCounts[key]
+    }));
+  }, [rawPortofolio]);
+
+
   if (status === "loading") {
     return <div className="min-h-screen bg-[#fff5f5]"></div>;
   }
@@ -128,15 +156,15 @@ export default function DashboardHomePage() {
   return (
     <div className="relative min-h-screen p-6 sm:p-10 overflow-hidden font-sans bg-[#fff5f5]">
       
+      {/* Efek Latar Belakang Blur */}
       <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-red-300 rounded-full mix-blend-multiply filter blur-[120px] opacity-30 z-0 pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-orange-200 rounded-full mix-blend-multiply filter blur-[120px] opacity-30 z-0 pointer-events-none"></div>
 
       <div className="relative z-10 max-w-6xl mx-auto">
         
+        {/* Header Dashboard */}
         <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
           className="mb-10"
         >
           <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">
@@ -188,37 +216,68 @@ export default function DashboardHomePage() {
           className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10"
         >
           
-          {/* Grafik Garis (Tren) */}
-          <div className="lg:col-span-2 bg-white/90 backdrop-blur-xl border border-gray-200 rounded-[2rem] p-6 sm:p-8 shadow-sm">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Tren Pertumbuhan Data</h3>
-            <div className="h-[300px] w-full">
+          {/* Grafik Garis (Tren Berita Saja) */}
+          <div className="lg:col-span-2 bg-white/90 backdrop-blur-xl border border-gray-200 rounded-[2rem] p-6 sm:p-8 shadow-sm flex flex-col">
+            
+            {/* Header Area & Filter Tahun */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Tren Posting Berita</h3>
+                <p className="text-sm text-gray-500 font-medium mt-1">Aktivitas publikasi artikel per bulan</p>
+              </div>
+              
+              {/* Tombol Filter Tahun */}
+              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-gray-500"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+                <select 
+                  value={selectedYear} 
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  className="bg-transparent text-sm font-bold text-gray-700 focus:outline-none cursor-pointer"
+                >
+                  <option value="Semua">Semua Tahun</option>
+                  {availableYears.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Area Line Chart */}
+            <div className="flex-1 min-h-[250px] w-full mt-2">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                <LineChart data={trendData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} />
+                  <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} />
                   <RechartsTooltip 
                     contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
+                    cursor={{ stroke: '#fca5a5', strokeWidth: 2, strokeDasharray: '5 5' }}
                   />
-                  <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-                  <Line type="monotone" dataKey="Berita" stroke="#dc2626" strokeWidth={4} dot={{r: 4, strokeWidth: 2}} activeDot={{r: 8}} />
-                  <Line type="monotone" dataKey="Portofolio" stroke="#f97316" strokeWidth={4} dot={{r: 4, strokeWidth: 2}} activeDot={{r: 8}} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="Berita" 
+                    name="Jumlah Berita"
+                    stroke="#dc2626" 
+                    strokeWidth={4} 
+                    dot={{r: 4, strokeWidth: 2, fill: '#fff'}} 
+                    activeDot={{r: 8, stroke: '#dc2626', strokeWidth: 2}} 
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Grafik Donat (Kategori) */}
+          {/* Grafik Donat */}
           <div className="bg-white/90 backdrop-blur-xl border border-gray-200 rounded-[2rem] p-6 sm:p-8 shadow-sm flex flex-col">
             <h3 className="text-xl font-bold text-gray-900 mb-2">Kategori Portofolio</h3>
-            <p className="text-sm text-gray-500 mb-6 font-medium">Distribusi berdasarkan divisi</p>
+            <p className="text-sm text-gray-500 mb-6 font-medium">Distribusi berdasarkan jenis project</p>
             
             {categoryData.length > 0 ? (
-              <div className="flex-1 h-[250px] w-full relative">
+              <div className="flex-1 min-h-[200px] w-full relative">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={categoryData} cx="50%" cy="50%" innerRadius={60} outerRadius={90}
+                      data={categoryData} cx="50%" cy="50%" innerRadius="65%" outerRadius="90%"
                       paddingAngle={5} dataKey="value" stroke="none"
                     >
                       {categoryData.map((entry, index) => (
@@ -229,9 +288,9 @@ export default function DashboardHomePage() {
                   </PieChart>
                 </ResponsiveContainer>
                 {/* Teks di tengah donat */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-4">
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-2">
                   <span className="text-3xl font-black text-gray-900">{totalPortofolio}</span>
-                  <span className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">Total</span>
+                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Project</span>
                 </div>
               </div>
             ) : (
@@ -241,7 +300,7 @@ export default function DashboardHomePage() {
             )}
             
             {/* Custom Legend Donut */}
-            <div className="mt-4 flex flex-wrap justify-center gap-3">
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
                {categoryData.map((entry, index) => (
                  <div key={index} className="flex items-center gap-1.5">
                     <span className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
