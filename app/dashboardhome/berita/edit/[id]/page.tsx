@@ -5,11 +5,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
+// 🔥 Panggil Satpam Baru
+import { useSession, signOut } from "next-auth/react";
 
 export default function EditBeritaPage() {
   const params = useParams();
   const router = useRouter();
   const { id } = params;
+
+  // 🔥 Aktifkan sesi NextAuth
+  const { data: session, status } = useSession();
 
   const [judulBerita, setJudulBerita] = useState("");
   const [kontenBerita, setKontenBerita] = useState("");
@@ -22,15 +27,20 @@ export default function EditBeritaPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 1. Fetch Existing Data
+ 
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  
   useEffect(() => {
     const fetchDetailBerita = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          router.push("/login");
-          return;
-        }
+       
+        const token = (session as any)?.accessToken;
+        if (!token) return;
 
         const response = await axios.get(`/api/admin/berita/show/${id}`, {
           headers: {
@@ -62,15 +72,22 @@ export default function EditBeritaPage() {
         }
       } catch (error) {
         console.error("Gagal mengambil data lama:", error);
-        setErrorMsg("Gagal memuat data lama dari server.");
+        
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          // 🔥 Kalau token mati, logout otomatis
+          signOut({ callbackUrl: '/login' });
+        } else {
+          setErrorMsg("Gagal memuat data lama dari server.");
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (id) fetchDetailBerita();
+   
+    if (id && status === "authenticated") fetchDetailBerita();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, status, session]);
 
   // Handle file input change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,14 +98,15 @@ export default function EditBeritaPage() {
     }
   };
 
-  // 2. Submit Updated Data to Server
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     setErrorMsg("");
 
     try {
-      const token = localStorage.getItem("token");
+    
+      const token = (session as any)?.accessToken;
       if (!token) return;
 
       const formData = new FormData();
@@ -116,11 +134,20 @@ export default function EditBeritaPage() {
 
     } catch (error) {
       console.error("Gagal update berita:", error);
-      setErrorMsg("Gagal menyimpan perubahan ke server. Cek console untuk detail.");
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        signOut({ callbackUrl: '/login' });
+      } else {
+        setErrorMsg("Gagal menyimpan perubahan ke server. Cek console untuk detail.");
+      }
     } finally {
       setIsSaving(false);
     }
   };
+
+  
+  if (status === "loading") {
+    return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen p-6 sm:p-10 font-sans">

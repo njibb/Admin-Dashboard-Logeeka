@@ -1,15 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
+import { useSession, signOut } from "next-auth/react";
+
 export default function TambahPortofolioPage() {
   const router = useRouter();
   
+
+  const { data: session, status } = useSession();
+
   // ================= STATE & REFS =================
   const [title, setTitle] = useState("");
   const [projectUrl, setProjectUrl] = useState("");
@@ -20,6 +24,13 @@ export default function TambahPortofolioPage() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+ 
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
 
   // ================= EVENT HANDLERS =================
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,11 +47,10 @@ export default function TambahPortofolioPage() {
     setErrorMsg("");
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
+  
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const token = (session as any)?.accessToken;
+      if (!token) return;
 
       const formData = new FormData();
       formData.append("title", title);
@@ -83,8 +93,8 @@ export default function TambahPortofolioPage() {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          localStorage.removeItem("token");
-          router.push("/login");
+          
+           signOut({ callbackUrl: '/login' });
         } else {
           setErrorMsg(error.response?.data?.message || "Gagal menyimpan data ke server.");
         }
@@ -96,9 +106,13 @@ export default function TambahPortofolioPage() {
     }
   };
 
+  
+  if (status === "loading") {
+    return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
+  }
+
   return (
     <div className="min-h-screen p-6 sm:p-10 font-sans">
-      
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
@@ -123,7 +137,6 @@ export default function TambahPortofolioPage() {
         </div>
       )}
 
-      
       <div className="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden p-6 sm:p-8 max-w-4xl">
         <form onSubmit={handleSubmit} className="space-y-6">
           
@@ -196,7 +209,6 @@ export default function TambahPortofolioPage() {
             />
           </div>
 
-         
           <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
             <Link 
               href="/dashboardhome/portofolio"

@@ -6,16 +6,28 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 
+import { useSession, signOut } from "next-auth/react";
+
 export default function DetailPortofolioPage() {
   const params = useParams(); 
   const router = useRouter();
   const { id } = params; 
 
+
+  const { data: session, status } = useSession();
+
   const [portofolioDetail, setPortofolioDetail] = useState<any>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ================= FUNGSI GET DETAIL =================
+  
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+ 
   useEffect(() => {
     const fetchDetailPortofolio = async () => {
       if (!id) return; 
@@ -23,11 +35,9 @@ export default function DetailPortofolioPage() {
       setIsLoading(true);
 
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          router.push("/login");
-          return;
-        }
+      
+        const token = (session as any)?.accessToken;
+        if (!token) return;
 
         const config = {
           headers: {
@@ -63,15 +73,27 @@ export default function DetailPortofolioPage() {
 
       } catch (error) {
         console.error("Gagal load detail portofolio", error);
-        setPortofolioDetail(null);
+        
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+       
+          signOut({ callbackUrl: '/login' });
+        } else {
+          setPortofolioDetail(null);
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchDetailPortofolio();
+   
+    if (id && status === "authenticated") fetchDetailPortofolio();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, status, session]);
+
+  
+  if (status === "loading") {
+    return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen p-6 sm:p-10 font-sans">
@@ -155,7 +177,7 @@ export default function DetailPortofolioPage() {
           
         ) : (
           
-          // ================= EMPTY STATE KEKINIAN (PORTOFOLIO) =================
+        
           <div className="py-20 text-center">
             <div className="flex flex-col items-center justify-center">
               <div className="bg-red-50 p-6 rounded-full mb-6 border border-red-100 shadow-inner">

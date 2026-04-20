@@ -6,24 +6,35 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 
+import { useSession, signOut } from "next-auth/react";
+
 export default function DetailBeritaPage() {
   const params = useParams(); 
   const router = useRouter();
   const { id } = params; 
 
+ 
+  const { data: session, status } = useSession();
+
   const [beritaDetail, setBeritaDetail] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
+
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
 
   useEffect(() => {
     const fetchDetailBerita = async () => {
       setIsLoading(true);
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          router.push("/login");
-          return;
-        }
+        
+        const token = (session as any)?.accessToken;
+        
+        if (!token) return;
 
         const response = await axios.get(`/api/admin/berita/show/${id}`, {
           headers: {
@@ -40,25 +51,37 @@ export default function DetailBeritaPage() {
 
       } catch (error) {
         console.error("Gagal mengambil detail berita:", error);
-        setErrorMsg("Gagal memuat detail berita dari server.");
+        
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+       
+          signOut({ callbackUrl: '/login' });
+        } else {
+          setErrorMsg("Gagal memuat detail berita dari server.");
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (id) {
+   
+    if (id && status === "authenticated") {
       fetchDetailBerita();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, status, session]);
+
+  
+  if (status === "loading") {
+    return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
+  }
 
   let imageUrl = null;
   if (beritaDetail?.single_media_object?.path_media) {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL; 
     imageUrl = `${baseUrl}/${beritaDetail.single_media_object.path_media}`;
   } else {
-     // Cadangan
-     imageUrl = beritaDetail?.file_url || beritaDetail?.image_url || beritaDetail?.thumbnail_url;
+      // Cadangan
+      imageUrl = beritaDetail?.file_url || beritaDetail?.image_url || beritaDetail?.thumbnail_url;
   }
 
   return (
@@ -115,7 +138,7 @@ export default function DetailBeritaPage() {
               </h1>
             </div>
 
-            {/* 🔥 Area Gambar */}
+            {/*  Area Gambar */}
             {imageUrl ? (
               <div className="w-full h-64 sm:h-96 rounded-2xl overflow-hidden border border-gray-100 shadow-inner bg-gray-50">
                 <img 

@@ -5,16 +5,19 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 
+import { useSession, signOut } from "next-auth/react";
+
 export default function EditPortofolioPage() {
   const params = useParams();
   const router = useRouter();
   const { id } = params;
 
-  
+ 
+  const { data: session, status } = useSession();
+
   const [title, setTitle] = useState("");
   const [projectUrl, setProjectUrl] = useState("");
   const [categoryCode, setCategoryCode] = useState("marketing_communication");
-  
   
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -25,17 +28,22 @@ export default function EditPortofolioPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 1. MENGAMBIL DATA LAMA SAAT HALAMAN DIBUKA
+ 
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  
   useEffect(() => {
     const fetchDataLama = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          router.push("/login");
-          return;
-        }
+      
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const token = (session as any)?.accessToken;
+        if (!token) return;
 
-       
         const response = await axios.get(`/api/admin/project-profile/show/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -44,7 +52,6 @@ export default function EditPortofolioPage() {
         });
 
         const dataAkurat = response.data?.data || response.data?.result || response.data;
-        
         
         if (dataAkurat) {
           setTitle(dataAkurat.title || "");
@@ -56,18 +63,23 @@ export default function EditPortofolioPage() {
         }
       } catch (error) {
         console.error("Gagal mengambil data lama:", error);
-      
-        console.log("Data lama gagal dimuat. Form akan kosong.");
+        
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          
+           signOut({ callbackUrl: '/login' });
+        } else {
+           console.log("Data lama gagal dimuat. Form akan kosong.");
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (id) fetchDataLama();
+   
+    if (id && status === "authenticated") fetchDataLama();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, status, session]);
 
- 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -76,14 +88,16 @@ export default function EditPortofolioPage() {
     }
   };
 
-  // 2. MENGIRIM DATA BARU (UPDATE) KE SERVER
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     setErrorMsg("");
 
     try {
-      const token = localStorage.getItem("token");
+     
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const token = (session as any)?.accessToken;
       if (!token) return;
 
       const formData = new FormData();
@@ -91,12 +105,10 @@ export default function EditPortofolioPage() {
       formData.append("project_url", projectUrl);
       formData.append("category_code", categoryCode);
       
-    
       if (fileUpload) {
         formData.append("single_thumbnail_upload", fileUpload); 
       }
 
-      
       await axios.post(
         `/api/admin/project-profile/update/${id}`, 
         formData,
@@ -112,11 +124,20 @@ export default function EditPortofolioPage() {
 
     } catch (error) {
       console.error("Gagal update portofolio:", error);
-      setErrorMsg("Gagal menyimpan perubahan ke server. Cek koneksi atau URL API.");
+      
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+         signOut({ callbackUrl: '/login' });
+      } else {
+         setErrorMsg("Gagal menyimpan perubahan ke server. Cek koneksi atau URL API.");
+      }
     } finally {
       setIsSaving(false);
     }
   };
+
+  if (status === "loading") {
+    return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen p-6 sm:p-10 font-sans">

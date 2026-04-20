@@ -3,10 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-// 1. Panggil Satpam Baru dari NextAuth
 import { useSession, signOut } from "next-auth/react";
 
-// ================= KOMPONEN EFEK ANGKA ACAK =================
+
 const ScrambleNumber = ({ value }: { value: string | number }) => {
   const [display, setDisplay] = useState<string | number>("...");
 
@@ -14,16 +13,16 @@ const ScrambleNumber = ({ value }: { value: string | number }) => {
     if (value === "...") return; 
 
     // eslint-disable-next-line prefer-const
-    let duration = 800; // Lama efek ngacak (800ms)
+    let duration = 800; 
     // eslint-disable-next-line prefer-const
-    let interval = 40;  // Kecepatan ganti angka (40ms)
+    let interval = 40;  
     let elapsed = 0;
 
     const timer = setInterval(() => {
       elapsed += interval;
       if (elapsed >= duration) {
         clearInterval(timer);
-        setDisplay(value); // Kunci di angka asli
+        setDisplay(value); 
       } else {
         setDisplay(Math.floor(Math.random() * 100)); 
       }
@@ -38,13 +37,13 @@ const ScrambleNumber = ({ value }: { value: string | number }) => {
 export default function DashboardHomePage() {
   const router = useRouter();
   
-  // 2. Aktifkan sesi NextAuth
+  
   const { data: session, status } = useSession();
 
   const [totalBerita, setTotalBerita] = useState<number | string>("...");
   const [totalPortofolio, setTotalPortofolio] = useState<number | string>("...");
 
-  // 3. Efek untuk menendang user kalau belum login
+  
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
@@ -53,11 +52,11 @@ export default function DashboardHomePage() {
 
   // ================= FUNGSI GET DATA =================
   const fetchDashboardData = async () => {
-    // 4. Ambil token dari brankas NextAuth (bukan localStorage lagi)
+    
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const token = (session as any)?.accessToken;
 
-    if (!token) return; // Kalau belum ada token, berhenti sebentar
+    if (!token) return; 
 
     const config = {
       headers: {
@@ -74,7 +73,7 @@ export default function DashboardHomePage() {
       setTotalBerita(countBerita);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
-        // 5. Kalau token mati/expired, pakai fungsi signOut bawaan NextAuth
+       
         signOut({ callbackUrl: '/login' });
         return; 
       }
@@ -97,14 +96,14 @@ export default function DashboardHomePage() {
   };
 
   useEffect(() => {
-    // 6. Cuma jalankan fetch data kalau statusnya udah "authenticated" (token siap)
+    
     if (status === "authenticated") {
       fetchDashboardData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, session]);
 
-  // 7. Tampilkan layar putih/loading sebentar saat NextAuth lagi ngecek token
+ 
   if (status === "loading") {
     return <div className="min-h-screen bg-[#fff5f5]"></div>;
   }

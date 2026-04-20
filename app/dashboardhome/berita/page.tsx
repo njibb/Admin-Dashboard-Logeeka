@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { motion } from 'framer-motion';
-// 🔥 Panggil Satpam Baru dari NextAuth
+
 import { useSession, signOut } from "next-auth/react";
 
 interface Berita {
@@ -19,7 +19,7 @@ interface Berita {
 export default function ManajemenBeritaPage() {
   const router = useRouter();
   
-  // 🔥 Aktifkan sesi NextAuth
+  
   const { data: session, status } = useSession();
 
   const [beritaData, setBeritaData] = useState<Berita[]>([]); 
@@ -27,7 +27,7 @@ export default function ManajemenBeritaPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // 🔥 Efek perlindungan: tendang kalau belum login
+  
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
@@ -39,7 +39,7 @@ export default function ManajemenBeritaPage() {
     setErrorMsg("");
 
     try {
-      // 🔥 Ambil token dari NextAuth, bukan localStorage
+    
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const token = (session as any)?.accessToken;
 
@@ -62,7 +62,7 @@ export default function ManajemenBeritaPage() {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          // 🔥 Logout otomatis pakai NextAuth kalau token mati
+       
           signOut({ callbackUrl: '/login' });
         } else {
           setErrorMsg("Gagal memuat data berita dari server.");
@@ -88,7 +88,7 @@ export default function ManajemenBeritaPage() {
     if (!confirmDelete.isConfirmed) return;
 
     try {
-      // 🔥 Ambil token dari NextAuth
+     
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const token = (session as any)?.accessToken;
       if (!token) return;
@@ -124,7 +124,7 @@ export default function ManajemenBeritaPage() {
   };
 
   useEffect(() => {
-    // 🔥 Panggil data cuma pas status udah "authenticated"
+
     if (status === "authenticated") {
       fetchBerita();
     }
@@ -138,7 +138,7 @@ export default function ManajemenBeritaPage() {
     return judulMatch || asalMatch;
   });
 
-  // 🔥 Loading screen biar UI gak bocor sebelum dicek
+
   if (status === "loading") {
     return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
   }
@@ -220,7 +220,7 @@ export default function ManajemenBeritaPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                // 🔥 SKELETON LOADER BERITA 🔥
+                
                 [...Array(5)].map((_, index) => (
                   <tr key={index} className="animate-pulse border-b border-gray-50">
                     <td className="py-5 px-6">

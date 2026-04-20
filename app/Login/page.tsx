@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-// 1. Ganti axios dengan signIn dari next-auth
+
 import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
@@ -25,21 +25,20 @@ export default function LoginPage() {
       const cleanEmail = email.trim();
       const cleanPassword = password.trim();
 
-      // 2. Gunakan fungsi signIn NextAuth, arahkan ke provider "credentials"
       const result = await signIn("credentials", {
-        redirect: false, // Jangan otomatis redirect kalau gagal, biar kita bisa tangkap errornya
-        username: cleanEmail, // Di nextauth kita nyebutnya username (lihat route.ts), tapi isinya email
+        redirect: false, 
+        username: cleanEmail, 
         password: cleanPassword,
       });
 
       // 3. Cek hasil dari next-auth
       if (result?.error) {
-        // Kalau gagal login (password salah / email gak ada)
+        
         setErrorMsg("Login gagal. Periksa kembali email dan password Anda.");
       } else if (result?.ok) {
-        // Kalau sukses, token otomatis kesimpen di cookies, langsung gass ke dashboard!
+        
         router.push("/dashboardhome");
-        // Opsional: router.refresh() biar state di server ikut ke-update
+
         router.refresh(); 
       }
 

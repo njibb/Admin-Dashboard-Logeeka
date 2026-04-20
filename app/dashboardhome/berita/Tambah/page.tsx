@@ -1,15 +1,19 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
+import { useSession, signOut } from "next-auth/react";
+
 export default function TambahBeritaPage() {
   const router = useRouter();
   
- 
+  
+  const { data: session, status } = useSession();
+
   const [judulBerita, setJudulBerita] = useState("");
   const [kontenBerita, setKontenBerita] = useState("");
   const [fileUpload, setFileUpload] = useState<File | null>(null);
@@ -18,43 +22,43 @@ export default function TambahBeritaPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setFileUpload(file);
-     
       setImagePreview(URL.createObjectURL(file));
     }
   };
 
- 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMsg("");
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-
+      
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const token = (session as any)?.accessToken;
+      if (!token) return;
       
       const formData = new FormData();
       formData.append("judul_berita", judulBerita);
       formData.append("konten_berita", kontenBerita);
-      formData.append("single_file_tipe", "MEDIA_FILE"); // Sesuai Postman
+      formData.append("single_file_tipe", "MEDIA_FILE"); 
       
       if (fileUpload) {
         formData.append("single_file_upload", fileUpload);
       }
 
-      
       await axios.post(
         "/api/admin/berita/store", 
         formData,
@@ -76,14 +80,13 @@ export default function TambahBeritaPage() {
       });
 
       router.push("/dashboardhome/berita");
-      router.push("/dashboardhome/berita");
 
     } catch (error) {
       console.error("Gagal menambah berita:", error);
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          localStorage.removeItem("token");
-          router.push("/login");
+          
+          signOut({ callbackUrl: '/login' });
         } else {
           setErrorMsg(error.response?.data?.message || "Gagal menyimpan data ke server.");
         }
@@ -94,6 +97,11 @@ export default function TambahBeritaPage() {
       setIsLoading(false);
     }
   };
+
+ 
+  if (status === "loading") {
+    return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen p-6 sm:p-10 font-sans">
