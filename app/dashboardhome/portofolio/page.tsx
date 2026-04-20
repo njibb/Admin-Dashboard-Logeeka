@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { motion } from 'framer-motion';
+// 🔥 Panggil Satpam Baru dari NextAuth
+import { useSession, signOut } from "next-auth/react";
 
 interface Portofolio {
   id: string;
@@ -16,21 +18,30 @@ interface Portofolio {
 export default function ManajemenPortofolioPage() {
   const router = useRouter();
   
+  // 🔥 Aktifkan sesi NextAuth
+  const { data: session, status } = useSession();
+
   const [portofolioData, setPortofolioData] = useState<Portofolio[]>([]); 
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // 🔥 Efek perlindungan: tendang kalau belum login
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
 
   const fetchPortofolio = async () => {
     setIsLoading(true);
     setErrorMsg("");
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
+      // 🔥 Ambil token dari NextAuth, bukan localStorage
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const token = (session as any)?.accessToken;
+      if (!token) return;
 
       const response = await axios.get(
         "/api/project-profile/pagination?currentPage=1&dataPerPage=100&sort=desc&keywords=", 
@@ -51,8 +62,8 @@ export default function ManajemenPortofolioPage() {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          localStorage.removeItem("token");
-          router.push("/login");
+          // 🔥 Logout otomatis pakai NextAuth kalau token mati
+          signOut({ callbackUrl: '/login' });
         } else {
           setErrorMsg("Gagal memuat data portofolio dari server.");
         }
@@ -77,7 +88,9 @@ export default function ManajemenPortofolioPage() {
     if (!confirmDelete.isConfirmed) return;
 
     try {
-      const token = localStorage.getItem("token");
+      // 🔥 Ambil token dari NextAuth
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const token = (session as any)?.accessToken;
       if (!token) return;
 
       await axios.delete(`/api/admin/project-profile/delete/${id}`, {
@@ -98,18 +111,25 @@ export default function ManajemenPortofolioPage() {
       fetchPortofolio(); 
 
     } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'Terjadi kesalahan saat menghapus portofolio!'
-      });
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        signOut({ callbackUrl: '/login' });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Terjadi kesalahan saat menghapus portofolio!'
+        });
+      }
     }
   };
 
   useEffect(() => {
-    fetchPortofolio();
+    // 🔥 Panggil data cuma pas status udah "authenticated"
+    if (status === "authenticated") {
+      fetchPortofolio();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [status, session]);
 
   // Filter Data Pencarian Portofolio
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -119,6 +139,11 @@ export default function ManajemenPortofolioPage() {
     const categoryMatch = (item.category_code || "").toLowerCase().includes(searchLower);
     return titleMatch || categoryMatch;
   });
+
+  // 🔥 Loading screen biar UI gak bocor sebelum dicek
+  if (status === "loading") {
+    return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     // 🔥 EFEK FADE IN DARI FRAMER MOTION 🔥

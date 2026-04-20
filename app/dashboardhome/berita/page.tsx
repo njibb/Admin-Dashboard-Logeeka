@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { motion } from 'framer-motion';
+// 🔥 Panggil Satpam Baru dari NextAuth
+import { useSession, signOut } from "next-auth/react";
 
 interface Berita {
   id: string;
@@ -17,22 +19,31 @@ interface Berita {
 export default function ManajemenBeritaPage() {
   const router = useRouter();
   
+  // 🔥 Aktifkan sesi NextAuth
+  const { data: session, status } = useSession();
+
   const [beritaData, setBeritaData] = useState<Berita[]>([]); 
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // 🔥 Efek perlindungan: tendang kalau belum login
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
 
   const fetchBerita = async () => {
     setIsLoading(true);
     setErrorMsg("");
 
     try {
-      const token = localStorage.getItem("token");
+      // 🔥 Ambil token dari NextAuth, bukan localStorage
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const token = (session as any)?.accessToken;
 
-      if (!token) {
-        router.push("/login");
-        return;
-      }
+      if (!token) return;
 
       const response = await axios.get(
         "/api/admin/berita/pagination?sortBy=waktu_posting&sort=desc&currentPage=1&dataPerPage=100", 
@@ -51,8 +62,8 @@ export default function ManajemenBeritaPage() {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          localStorage.removeItem("token");
-          router.push("/login");
+          // 🔥 Logout otomatis pakai NextAuth kalau token mati
+          signOut({ callbackUrl: '/login' });
         } else {
           setErrorMsg("Gagal memuat data berita dari server.");
         }
@@ -77,11 +88,10 @@ export default function ManajemenBeritaPage() {
     if (!confirmDelete.isConfirmed) return;
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
+      // 🔥 Ambil token dari NextAuth
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const token = (session as any)?.accessToken;
+      if (!token) return;
 
       await axios.delete(`/api/admin/berita/delete/${id}`, {
         headers: {
@@ -101,18 +111,25 @@ export default function ManajemenBeritaPage() {
       fetchBerita(); 
 
     } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'Terjadi kesalahan saat menghapus berita!'
-      });
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+         signOut({ callbackUrl: '/login' });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Terjadi kesalahan saat menghapus berita!'
+        });
+      }
     }
   };
 
   useEffect(() => {
-    fetchBerita();
+    // 🔥 Panggil data cuma pas status udah "authenticated"
+    if (status === "authenticated") {
+      fetchBerita();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [status, session]);
 
   const filteredBerita = beritaData.filter((item) => {
     const searchLower = searchTerm.toLowerCase();
@@ -121,8 +138,12 @@ export default function ManajemenBeritaPage() {
     return judulMatch || asalMatch;
   });
 
+  // 🔥 Loading screen biar UI gak bocor sebelum dicek
+  if (status === "loading") {
+    return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
+  }
+
   return (
-  
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -135,7 +156,6 @@ export default function ManajemenBeritaPage() {
           <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Berita</h2>
         </div>
         
-       
         <Link 
           href="/dashboardhome/berita/Tambah" 
           className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-md shadow-red-200"

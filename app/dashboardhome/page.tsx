@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { motion } from 'framer-motion';
+// 1. Panggil Satpam Baru dari NextAuth
+import { useSession, signOut } from "next-auth/react";
 
 // ================= KOMPONEN EFEK ANGKA ACAK =================
 const ScrambleNumber = ({ value }: { value: string | number }) => {
@@ -35,18 +37,27 @@ const ScrambleNumber = ({ value }: { value: string | number }) => {
 
 export default function DashboardHomePage() {
   const router = useRouter();
+  
+  // 2. Aktifkan sesi NextAuth
+  const { data: session, status } = useSession();
 
   const [totalBerita, setTotalBerita] = useState<number | string>("...");
   const [totalPortofolio, setTotalPortofolio] = useState<number | string>("...");
 
+  // 3. Efek untuk menendang user kalau belum login
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
   // ================= FUNGSI GET DATA =================
   const fetchDashboardData = async () => {
-    const token = localStorage.getItem("token");
+    // 4. Ambil token dari brankas NextAuth (bukan localStorage lagi)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const token = (session as any)?.accessToken;
 
-    if (!token) {
-      router.push("/login"); 
-      return;
-    }
+    if (!token) return; // Kalau belum ada token, berhenti sebentar
 
     const config = {
       headers: {
@@ -63,8 +74,8 @@ export default function DashboardHomePage() {
       setTotalBerita(countBerita);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
-        localStorage.removeItem("token");
-        router.push("/login");
+        // 5. Kalau token mati/expired, pakai fungsi signOut bawaan NextAuth
+        signOut({ callbackUrl: '/login' });
         return; 
       }
       setTotalBerita("0");
@@ -78,8 +89,7 @@ export default function DashboardHomePage() {
       setTotalPortofolio(countPortofolio);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
-        localStorage.removeItem("token");
-        router.push("/login");
+        signOut({ callbackUrl: '/login' });
         return;
       }
       setTotalPortofolio("0");
@@ -87,9 +97,17 @@ export default function DashboardHomePage() {
   };
 
   useEffect(() => {
-    fetchDashboardData();
+    // 6. Cuma jalankan fetch data kalau statusnya udah "authenticated" (token siap)
+    if (status === "authenticated") {
+      fetchDashboardData();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [status, session]);
+
+  // 7. Tampilkan layar putih/loading sebentar saat NextAuth lagi ngecek token
+  if (status === "loading") {
+    return <div className="min-h-screen bg-[#fff5f5]"></div>;
+  }
 
   return (
     <div className="relative min-h-screen p-6 sm:p-10 overflow-hidden font-sans bg-[#fff5f5]">
