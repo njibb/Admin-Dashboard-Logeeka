@@ -8,6 +8,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, Legend 
 } from 'recharts';
+import Swal from 'sweetalert2';
 
 const ScrambleNumber = ({ value }: { value: string | number }) => {
   const [display, setDisplay] = useState<string | number>("...");
@@ -58,7 +59,7 @@ export default function DashboardHomePage() {
     }
   }, [status, router]);
 
-  const fetchDashboardData = async () => {
+ const fetchDashboardData = async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const token = (session as any)?.accessToken;
     if (!token) return;
@@ -71,9 +72,10 @@ export default function DashboardHomePage() {
       const urlBerita = "/api/admin/berita/pagination?sortBy=waktu_posting&sort=desc&currentPage=1&dataPerPage=100&keywords=";
       const urlPorto = "/api/project-profile/pagination?sort=desc&currentPage=1&dataPerPage=100&keywords=";
       
+      // 🔥 PEREDAM ERROR DICOPOT BARENG-BARENG!
       const [beritaRes, portofolioRes] = await Promise.all([
-        axios.get(urlBerita, config).catch(() => null),
-        axios.get(urlPorto, config).catch(() => null)
+        axios.get(urlBerita, config),
+        axios.get(urlPorto, config)
       ]);
 
       const listBerita = beritaRes?.data?.result?.data || [];
@@ -85,8 +87,18 @@ export default function DashboardHomePage() {
       setTotalPortofolio(portofolioRes?.data?.result?.count ?? listPorto.length ?? "0");
 
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        signOut({ callbackUrl: '/login' });
+      console.error("DASHBOARD FETCH ERROR:", error);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          signOut({ callbackUrl: '/login' });
+        } else {
+          // 🔥 Pasang Alarm SweetAlert2
+          Swal.fire({
+            icon: 'error',
+            title: 'Vercel API Error!',
+            text: `Gagal tarik data. Status: ${error.response?.status} - ${error.message}`
+          });
+        }
       }
     }
   };
