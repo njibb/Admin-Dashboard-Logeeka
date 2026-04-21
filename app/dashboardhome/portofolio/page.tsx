@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { motion } from 'framer-motion';
-
 import { useSession, signOut } from "next-auth/react";
 
 interface Portofolio {
@@ -17,8 +16,6 @@ interface Portofolio {
 
 export default function ManajemenPortofolioPage() {
   const router = useRouter();
-  
- 
   const { data: session, status } = useSession();
 
   const [portofolioData, setPortofolioData] = useState<Portofolio[]>([]); 
@@ -26,7 +23,6 @@ export default function ManajemenPortofolioPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
 
-  
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
@@ -38,7 +34,6 @@ export default function ManajemenPortofolioPage() {
     setErrorMsg("");
 
     try {
-     
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const token = (session as any)?.accessToken;
       if (!token) return;
@@ -62,7 +57,6 @@ export default function ManajemenPortofolioPage() {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-         
           signOut({ callbackUrl: '/login' });
         } else {
           setErrorMsg("Gagal memuat data portofolio dari server.");
@@ -88,7 +82,6 @@ export default function ManajemenPortofolioPage() {
     if (!confirmDelete.isConfirmed) return;
 
     try {
-     
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const token = (session as any)?.accessToken;
       if (!token) return;
@@ -124,21 +117,22 @@ export default function ManajemenPortofolioPage() {
   };
 
   useEffect(() => {
-
-    if (status === "authenticated") {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tokenSiap = (session as any)?.accessToken;
+    
+    if (status === "authenticated" && tokenSiap) {
       fetchPortofolio();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, session]);
 
- 
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const filteredPortofolio = portofolioData.filter((item: any) => {
-  const searchLower = searchTerm.toLowerCase();
-  const titleMatch = (item.title || "").toLowerCase().includes(searchLower);
-  const categoryMatch = (item.category_code || "").toLowerCase().includes(searchLower);
-  return titleMatch || categoryMatch;
-});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const filteredPortofolio = portofolioData.filter((item: any) => {
+    const searchLower = searchTerm.toLowerCase();
+    const titleMatch = (item.title || "").toLowerCase().includes(searchLower);
+    const categoryMatch = (item.category_code || "").toLowerCase().includes(searchLower);
+    return titleMatch || categoryMatch;
+  });
 
   if (status === "loading") {
     return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
@@ -151,7 +145,6 @@ const filteredPortofolio = portofolioData.filter((item: any) => {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="min-h-screen p-6 sm:p-10 font-sans"
     >
-      
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Portofolio</h2>
@@ -174,7 +167,6 @@ const filteredPortofolio = portofolioData.filter((item: any) => {
       )}
 
       <div className="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden">
-        
         <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
             <span>Show</span>
@@ -211,7 +203,6 @@ const filteredPortofolio = portofolioData.filter((item: any) => {
             </thead>
             <tbody>
               {isLoading ? (
-              
                 [...Array(5)].map((_, index) => (
                   <tr key={index} className="animate-pulse border-b border-gray-50">
                     <td className="py-5 px-6">
@@ -261,8 +252,8 @@ const filteredPortofolio = portofolioData.filter((item: any) => {
                   </td>
                 </tr>
               ) : (
-               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-               filteredPortofolio.map((item: any) => (
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                filteredPortofolio.map((item: any) => (
                   <tr key={item.id} className="hover:bg-red-50/40 transition-colors group">
                     <td className="py-4 px-6 border-b border-gray-100 text-sm font-semibold text-gray-900 max-w-[300px] truncate">
                       {item.title || "Judul Tidak Diketahui"}
