@@ -9,7 +9,6 @@ import {
   PieChart, Pie, Cell, Legend 
 } from 'recharts';
 
-
 const ScrambleNumber = ({ value }: { value: string | number }) => {
   const [display, setDisplay] = useState<string | number>("...");
 
@@ -18,7 +17,6 @@ const ScrambleNumber = ({ value }: { value: string | number }) => {
   const duration = 800; 
   const interval = 40; 
   let elapsed = 0;     
-  
   
     const timer = setInterval(() => {
       elapsed += interval;
@@ -46,7 +44,6 @@ export default function DashboardHomePage() {
   const [totalBerita, setTotalBerita] = useState<number | string>("...");
   const [totalPortofolio, setTotalPortofolio] = useState<number | string>("...");
 
-  
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [rawBerita, setRawBerita] = useState<any[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -94,13 +91,18 @@ export default function DashboardHomePage() {
     }
   };
 
+  // 🔥 INI BAGIAN YANG DIBENERIN (ANTI RACE-CONDITION)
   useEffect(() => {
-    if (status === "authenticated") fetchDashboardData();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tokenSiap = (session as any)?.accessToken;
+    
+    // Pastikan status udah authenticated DAN tokennya udah beneran nyampe
+    if (status === "authenticated" && tokenSiap) {
+      fetchDashboardData();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, session]);
 
- 
-  
   const availableYears = useMemo(() => {
     const years = new Set<string>();
     rawBerita.forEach(item => {
@@ -112,16 +114,14 @@ export default function DashboardHomePage() {
     return Array.from(years).sort().reverse(); 
   }, [rawBerita]);
 
-  
   const trendData = useMemo(() => {
-    const monthsCount = Array(12).fill(0); // Bikin array [0, 0, ..., 0] isi 12
+    const monthsCount = Array(12).fill(0);
 
     rawBerita.forEach(item => {
       if (!item.waktu_posting) return;
       const year = item.waktu_posting.substring(0, 4);
       const monthIdx = parseInt(item.waktu_posting.substring(5, 7), 10) - 1; 
 
-     
       if (selectedYear === "Semua" || year === selectedYear) {
         if (monthIdx >= 0 && monthIdx <= 11) {
           monthsCount[monthIdx] += 1;
@@ -129,14 +129,12 @@ export default function DashboardHomePage() {
       }
     });
 
-    
     return MONTH_NAMES.map((month, index) => ({
       name: month,
       Berita: monthsCount[index]
     }));
   }, [rawBerita, selectedYear]);
 
- 
   const categoryData = useMemo(() => {
     const catCounts: Record<string, number> = {};
     rawPortofolio.forEach(item => {
@@ -147,7 +145,6 @@ export default function DashboardHomePage() {
       name: key, value: catCounts[key]
     }));
   }, [rawPortofolio]);
-
 
   if (status === "loading") {
     return <div className="min-h-screen bg-[#fff5f5]"></div>;
