@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { motion } from 'framer-motion';
-
 import { useSession, signOut } from "next-auth/react";
 
 interface Berita {
@@ -18,8 +17,6 @@ interface Berita {
 
 export default function ManajemenBeritaPage() {
   const router = useRouter();
-  
-  
   const { data: session, status } = useSession();
 
   const [beritaData, setBeritaData] = useState<Berita[]>([]); 
@@ -27,7 +24,6 @@ export default function ManajemenBeritaPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
 
-  
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
@@ -39,10 +35,8 @@ export default function ManajemenBeritaPage() {
     setErrorMsg("");
 
     try {
-    
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const token = (session as any)?.accessToken;
-
       if (!token) return;
 
       const response = await axios.get(
@@ -62,7 +56,6 @@ export default function ManajemenBeritaPage() {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-       
           signOut({ callbackUrl: '/login' });
         } else {
           setErrorMsg("Gagal memuat data berita dari server.");
@@ -88,7 +81,6 @@ export default function ManajemenBeritaPage() {
     if (!confirmDelete.isConfirmed) return;
 
     try {
-     
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const token = (session as any)?.accessToken;
       if (!token) return;
@@ -124,8 +116,10 @@ export default function ManajemenBeritaPage() {
   };
 
   useEffect(() => {
-
-    if (status === "authenticated") {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tokenSiap = (session as any)?.accessToken;
+    
+    if (status === "authenticated" && tokenSiap) {
       fetchBerita();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -138,7 +132,6 @@ export default function ManajemenBeritaPage() {
     return judulMatch || asalMatch;
   });
 
-
   if (status === "loading") {
     return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
   }
@@ -150,7 +143,6 @@ export default function ManajemenBeritaPage() {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="min-h-screen p-6 sm:p-10 font-sans"
     >
-      
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Berita</h2>
@@ -174,7 +166,6 @@ export default function ManajemenBeritaPage() {
       )}
 
       <div className="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden">
-        
         <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
             <span>Show</span>
@@ -220,7 +211,6 @@ export default function ManajemenBeritaPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                
                 [...Array(5)].map((_, index) => (
                   <tr key={index} className="animate-pulse border-b border-gray-50">
                     <td className="py-5 px-6">
@@ -289,19 +279,19 @@ export default function ManajemenBeritaPage() {
                     <td className="py-4 px-6 border-b border-gray-100 text-sm text-center">
                       <div className="flex items-center justify-center gap-2">
                         <Link 
-                         href={`/dashboardhome/berita/detail/${item.id}`}
-                         title="Lihat Detail" 
-                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                           >
-                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                           </Link>
+                          href={`/dashboardhome/berita/detail/${item.id}`}
+                          title="Lihat Detail" 
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        </Link>
                         <Link 
-                         href={`/dashboardhome/berita/edit/${item.id}`}
-                         title="Edit Berita" 
-                        className="p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-all"
-                           >
-                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
-                         </Link>
+                          href={`/dashboardhome/berita/edit/${item.id}`}
+                          title="Edit Berita" 
+                          className="p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-all"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
+                        </Link>
                         <button 
                           onClick={() => handleDelete(item.id)}
                           title="Hapus Berita" 
