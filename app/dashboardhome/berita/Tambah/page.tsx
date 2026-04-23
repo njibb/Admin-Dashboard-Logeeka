@@ -27,7 +27,7 @@ export default function TambahBeritaPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/login");
+      router.push("/Login");
     }
   }, [status, router]);
 

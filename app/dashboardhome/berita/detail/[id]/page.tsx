@@ -54,7 +54,7 @@ export default function DetailBeritaPage() {
         
         if (axios.isAxiosError(error) && error.response?.status === 401) {
        
-          signOut({ callbackUrl: '/login' });
+          signOut({ callbackUrl: 'Login' });
         } else {
           setErrorMsg("Gagal memuat detail berita dari server.");
         }
@@ -80,7 +80,6 @@ export default function DetailBeritaPage() {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL; 
     imageUrl = `${baseUrl}/${beritaDetail.single_media_object.path_media}`;
   } else {
-      // Cadangan
       imageUrl = beritaDetail?.file_url || beritaDetail?.image_url || beritaDetail?.thumbnail_url;
   }
 

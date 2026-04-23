@@ -5,7 +5,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
-// 🔥 Panggil Satpam Baru
 import { useSession, signOut } from "next-auth/react";
 
 export default function EditBeritaPage() {
@@ -13,7 +12,7 @@ export default function EditBeritaPage() {
   const router = useRouter();
   const { id } = params;
 
-  // 🔥 Aktifkan sesi NextAuth
+  
   const { data: session, status } = useSession();
 
   const [judulBerita, setJudulBerita] = useState("");
@@ -49,7 +48,7 @@ export default function EditBeritaPage() {
           }
         });
 
-        // Extract data from response
+        
         const responsData = response.data?.data || response.data?.result || response.data;
         const dataAkurat = responsData?.berita ? responsData.berita : responsData;
         
@@ -57,7 +56,7 @@ export default function EditBeritaPage() {
           setJudulBerita(dataAkurat.judul_berita || "");
           setKontenBerita(dataAkurat.konten_berita || "");
           
-          // Construct image URL
+          
           let imageUrl = null;
           if (dataAkurat?.single_media_object?.path_media) {
             const baseUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -74,8 +73,8 @@ export default function EditBeritaPage() {
         console.error("Gagal mengambil data lama:", error);
         
         if (axios.isAxiosError(error) && error.response?.status === 401) {
-          // 🔥 Kalau token mati, logout otomatis
-          signOut({ callbackUrl: '/login' });
+          
+          signOut({ callbackUrl: '/Login' });
         } else {
           setErrorMsg("Gagal memuat data lama dari server.");
         }
@@ -89,7 +88,7 @@ export default function EditBeritaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, status, session]);
 
-  // Handle file input change
+ 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -113,7 +112,7 @@ export default function EditBeritaPage() {
       formData.append("judul_berita", judulBerita);
       formData.append("konten_berita", kontenBerita);
       
-      // Append file only if a new image is selected
+      
       if (fileUpload) {
         formData.append("single_file_upload", fileUpload);
         formData.append("single_file_tipe", "MEDIA_FILE");
