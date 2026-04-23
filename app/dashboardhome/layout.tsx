@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+// 🔥 Jangan lupa import signOut dari next-auth
+import { signOut } from "next-auth/react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -11,6 +13,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   
   // 🔥 STATE BARU: Untuk memunculkan pop-up konfirmasi logout
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  // 🔥 FUNGSI LOGOUT SAKTI (Hancurkan Token + Hapus Sejarah Browser)
+  const handleLogoutSuccess = async () => {
+    // 1. Matikan pop-up nya dulu biar rapi
+    setShowLogoutModal(false);
+    
+    // 2. Hancurkan brankas token NextAuth (tanpa pindah halaman dulu)
+    await signOut({ redirect: false });
+    
+    // 3. Timpa sejarah browser dan pindah ke login (biar tombol back mati)
+    window.location.replace('/Login');
+  };
 
   return (
     <div className="flex h-screen bg-[#fff5f5] overflow-hidden font-sans">
@@ -95,7 +109,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
 
       {/* ================= 3. POP-UP KONFIRMASI LOGOUT ================= */}
-     
+      
       {showLogoutModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
           
@@ -123,11 +137,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 Tidak
               </button>
               
+              {/* 🔥 Tombol YA yang sudah dipasang jurus sakti */}
               <button 
-                onClick={() => {
-                  localStorage.removeItem("token");
-                  window.location.href = "/Login";
-                }}
+                onClick={handleLogoutSuccess}
                 className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 shadow-md shadow-red-200 transition-all whitespace-nowrap"
               >
                 Ya
