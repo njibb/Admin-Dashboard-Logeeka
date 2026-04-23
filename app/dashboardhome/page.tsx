@@ -6,20 +6,19 @@ import { motion } from 'framer-motion';
 import { useSession, signOut } from "next-auth/react";
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, Legend 
-} from 'recharts';
+  PieChart, Pie, Cell} from 'recharts';
 import Swal from 'sweetalert2';
 
-const ScrambleNumber = ({ value }: { value: string | number }) => {
+const ScrambleNumber = ({ value }: { value: string | number }): import("react/jsx-runtime").JSX.Element => {
   const [display, setDisplay] = useState<string | number>("...");
 
-  useEffect(() => {
+  useEffect((): (() => void) | undefined => {
   if (value === "...") return;
   const duration = 800; 
   const interval = 40; 
   let elapsed = 0;     
   
-    const timer = setInterval(() => {
+    const timer = setInterval((): void => {
       elapsed += interval;
       if (elapsed >= duration) {
         clearInterval(timer);
@@ -29,7 +28,7 @@ const ScrambleNumber = ({ value }: { value: string | number }) => {
       }
     }, interval);
 
-    return () => clearInterval(timer);
+    return (): void => clearInterval(timer);
   }, [value]);
 
   return <span>{display}</span>;
@@ -53,7 +52,7 @@ export default function DashboardHomePage() {
   // State untuk Filter Tahun Berita
   const [selectedYear, setSelectedYear] = useState<string>("Semua");
 
-  useEffect(() => {
+  useEffect((): void => {
     if (status === "unauthenticated") {
       router.push("/login");
     }
@@ -72,7 +71,7 @@ export default function DashboardHomePage() {
       const urlBerita = "/api/admin/berita/pagination?sortBy=waktu_posting&sort=desc&currentPage=1&dataPerPage=100&keywords=";
       const urlPorto = "/api/project-profile/pagination?sort=desc&currentPage=1&dataPerPage=100&keywords=";
       
-      // 🔥 PEREDAM ERROR DICOPOT BARENG-BARENG!
+
       const [beritaRes, portofolioRes] = await Promise.all([
         axios.get(urlBerita, config),
         axios.get(urlPorto, config)
@@ -92,7 +91,7 @@ export default function DashboardHomePage() {
         if (error.response?.status === 401) {
           signOut({ callbackUrl: '/login' });
         } else {
-          // 🔥 Pasang Alarm SweetAlert2
+          
           Swal.fire({
             icon: 'error',
             title: 'Vercel API Error!',
@@ -103,33 +102,33 @@ export default function DashboardHomePage() {
     }
   };
 
-  // 🔥 INI BAGIAN YANG DIBENERIN (ANTI RACE-CONDITION)
-  useEffect(() => {
+  
+  useEffect((): void => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tokenSiap = (session as any)?.accessToken;
     
-    // Pastikan status udah authenticated DAN tokennya udah beneran nyampe
+    
     if (status === "authenticated" && tokenSiap) {
       fetchDashboardData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, session]);
 
-  const availableYears = useMemo(() => {
+  const availableYears = useMemo(function () {
     const years = new Set<string>();
-    rawBerita.forEach(item => {
+    rawBerita.forEach((item): void => {
       if (item.waktu_posting) {
-        const year = item.waktu_posting.substring(0, 4); 
+        const year = item.waktu_posting.substring(0, 4);
         if (!isNaN(Number(year))) years.add(year);
       }
     });
-    return Array.from(years).sort().reverse(); 
+    return Array.from(years).sort().reverse();
   }, [rawBerita]);
 
   const trendData = useMemo(() => {
     const monthsCount = Array(12).fill(0);
 
-    rawBerita.forEach(item => {
+    rawBerita.forEach((item): void => {
       if (!item.waktu_posting) return;
       const year = item.waktu_posting.substring(0, 4);
       const monthIdx = parseInt(item.waktu_posting.substring(5, 7), 10) - 1; 
@@ -147,13 +146,13 @@ export default function DashboardHomePage() {
     }));
   }, [rawBerita, selectedYear]);
 
-  const categoryData = useMemo(() => {
+  const categoryData = useMemo((): { name: string; value: number; }[] => {
     const catCounts: Record<string, number> = {};
-    rawPortofolio.forEach(item => {
+    rawPortofolio.forEach((item): void => {
       const cat = item.category_code ? item.category_code.replace('_', ' ').toUpperCase() : "UMUM";
       catCounts[cat] = (catCounts[cat] || 0) + 1;
     });
-    return Object.keys(catCounts).map(key => ({
+    return Object.keys(catCounts).map((key): { name: string; value: number; } => ({
       name: key, value: catCounts[key]
     }));
   }, [rawPortofolio]);
@@ -240,11 +239,13 @@ export default function DashboardHomePage() {
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-gray-500"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
                 <select 
                   value={selectedYear} 
-                  onChange={(e) => setSelectedYear(e.target.value)}
+                  onChange={function (e): void {
+                    return setSelectedYear(e.target.value);
+                  }}
                   className="bg-transparent text-sm font-bold text-gray-700 focus:outline-none cursor-pointer"
                 >
                   <option value="Semua">Semua Tahun</option>
-                  {availableYears.map(year => (
+                  {availableYears.map((year): import("react/jsx-runtime").JSX.Element => (
                     <option key={year} value={year}>{year}</option>
                   ))}
                 </select>
@@ -289,7 +290,7 @@ export default function DashboardHomePage() {
                       data={categoryData} cx="50%" cy="50%" innerRadius="65%" outerRadius="90%"
                       paddingAngle={5} dataKey="value" stroke="none"
                     >
-                      {categoryData.map((entry, index) => (
+                      {categoryData.map((entry, index): import("react/jsx-runtime").JSX.Element => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -310,7 +311,7 @@ export default function DashboardHomePage() {
             
             {/* Custom Legend Donut */}
             <div className="mt-6 flex flex-wrap justify-center gap-3">
-               {categoryData.map((entry, index) => (
+               {categoryData.map((entry, index): import("react/jsx-runtime").JSX.Element => (
                  <div key={index} className="flex items-center gap-1.5">
                     <span className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
                     <span className="text-xs font-semibold text-gray-600">{entry.name}</span>
