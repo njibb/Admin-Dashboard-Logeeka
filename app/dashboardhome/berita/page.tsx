@@ -23,6 +23,7 @@ export default function ManajemenBeritaPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
+  const [entriesPerPage, setEntriesPerPage] = useState(10);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -132,6 +133,8 @@ export default function ManajemenBeritaPage() {
     return judulMatch || asalMatch;
   });
 
+  const displayedBerita = filteredBerita.slice(0, entriesPerPage);
+
   if (status === "loading") {
     return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
   }
@@ -169,10 +172,16 @@ export default function ManajemenBeritaPage() {
         <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
             <span>Show</span>
-            <select aria-label="Tampilkan entri" name="showEntries" className="border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white">
-              <option>10</option>
-              <option>25</option>
-              <option>50</option>
+            <select 
+              aria-label="Tampilkan entri" 
+              name="showEntries" 
+              value={entriesPerPage}
+              onChange={(e) => setEntriesPerPage(Number(e.target.value))}
+              className="border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white cursor-pointer"
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
             </select>
             <span>entries</span>
           </div>
@@ -211,7 +220,7 @@ export default function ManajemenBeritaPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                [...Array(5)].map((_, index) => (
+                [...Array(entriesPerPage)].map((_, index) => (
                   <tr key={index} className="animate-pulse border-b border-gray-50">
                     <td className="py-5 px-6">
                       <div className="h-4 bg-gray-200 rounded-md w-full"></div>
@@ -227,7 +236,7 @@ export default function ManajemenBeritaPage() {
                     </td>
                   </tr>
                 ))
-              ) : beritaData.length === 0 ? (
+              ) : displayedBerita.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="py-24 text-center">
                     <div className="flex flex-col items-center justify-center">
@@ -263,7 +272,7 @@ export default function ManajemenBeritaPage() {
                   </td>
                 </tr>
               ) : (
-                filteredBerita.map((item) => (
+                displayedBerita.map((item) => (
                   <tr key={item.id} className="hover:bg-red-50/40 transition-colors group">
                     <td className="py-4 px-6 border-b border-gray-100 text-sm font-semibold text-gray-900 max-w-[300px] truncate">
                       {item.judul_berita}
