@@ -54,7 +54,7 @@ export default function DashboardHomePage() {
 
   useEffect((): void => {
     if (status === "unauthenticated") {
-      router.push("/login");
+      router.push("/Login");
     }
   }, [status, router]);
 
@@ -89,7 +89,7 @@ export default function DashboardHomePage() {
       console.error("DASHBOARD FETCH ERROR:", error);
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          signOut({ callbackUrl: '/login' });
+          signOut({ callbackUrl: '/Login' });
         } else {
           
           Swal.fire({
