@@ -2,27 +2,18 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-// 🔥 Jangan lupa import signOut dari next-auth
 import { signOut } from "next-auth/react";
+import Image from 'next/image';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
-  // State untuk sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  
-  // 🔥 STATE BARU: Untuk memunculkan pop-up konfirmasi logout
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // 🔥 FUNGSI LOGOUT SAKTI (Hancurkan Token + Hapus Sejarah Browser)
   const handleLogoutSuccess = async () => {
-    // 1. Matikan pop-up nya dulu biar rapi
     setShowLogoutModal(false);
-    
-    // 2. Hancurkan brankas token NextAuth (tanpa pindah halaman dulu)
     await signOut({ redirect: false });
-    
-    // 3. Timpa sejarah browser dan pindah ke login (biar tombol back mati)
     window.location.replace('/Login');
   };
 
@@ -34,17 +25,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         className={`absolute lg:relative z-30 flex flex-col bg-white border-r border-gray-100 h-screen w-64 shrink-0 transition-all duration-300 ease-in-out shadow-[4px_0_24px_rgba(0,0,0,0.02)]
         ${isSidebarOpen ? 'translate-x-0 ml-0' : '-translate-x-full lg:-ml-64'}`}
       >
-        <div className="h-20 flex items-center px-6 border-b border-gray-50 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center shadow-sm">
-              <span className="text-white font-black text-xl">L</span>
-            </div>
-            <span className="text-xl font-black text-gray-900 tracking-tight">LOGEEKA<span className="text-red-600">.</span></span>
-          </div>
+     
+        <div className="h-24 flex items-center justify-center relative border-b border-gray-50 shrink-0 px-6">
+          
+       
+          <Image 
+            src="/logo-logeeka.png" 
+            alt="Logo Logeeka" 
+            width={90} 
+            height={90} 
+            className="object-contain"
+          />
+          
           
           <button 
             onClick={() => setIsSidebarOpen(false)}
-            className="ml-auto p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+            className="absolute right-4 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
             title="Tutup Menu"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -76,7 +72,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         <div className="p-4 border-t border-gray-100 shrink-0 mb-4">
-           {/* 🔥 UBAHAN 1: Tombol ini sekarang cuma menyalakan pop-up, bukan langsung logout */}
            <button 
              onClick={() => setShowLogoutModal(true)}
              className="w-full flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-3 rounded-2xl hover:bg-black transition-all font-bold"
@@ -115,20 +110,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           
           <div className="bg-white rounded-[1.5rem] shadow-2xl border border-gray-100 p-5 flex flex-col sm:flex-row items-center gap-5 max-w-xl w-full">
             
-            {/* Icon Kiri */}
+         
             <div className="w-12 h-12 shrink-0 flex items-center justify-center text-red-500 bg-red-50 rounded-full border border-red-100">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
               </svg>
             </div>
 
-            {/* Teks Tengah */}
+          
             <div className="flex-1 text-center sm:text-left">
               <h3 className="text-lg font-bold text-gray-900">Anda ingin keluar??</h3>
               <p className="text-sm text-gray-500 mt-0.5">Sesi Anda akan berakhir dan harus login kembali.</p>
             </div>
 
-            {/* Tombol Kanan */}
+          
             <div className="flex items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0 justify-center">
               <button 
                 onClick={() => setShowLogoutModal(false)}
@@ -137,7 +132,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 Tidak
               </button>
               
-              {/* 🔥 Tombol YA yang sudah dipasang jurus sakti */}
               <button 
                 onClick={handleLogoutSuccess}
                 className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 shadow-md shadow-red-200 transition-all whitespace-nowrap"

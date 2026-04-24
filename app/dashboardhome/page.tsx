@@ -284,7 +284,15 @@ export default function DashboardHomePage() {
             
             {categoryData.length > 0 ? (
               <div className="flex-1 min-h-[200px] w-full relative">
-                <ResponsiveContainer width="100%" height="100%">
+                
+                
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-2 z-0">
+                  <span className="text-3xl font-black text-gray-900">{totalPortofolio}</span>
+                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Project</span>
+                </div>
+
+                
+                <ResponsiveContainer width="100%" height="100%" className="relative z-10">
                   <PieChart>
                     <Pie
                       data={categoryData} cx="50%" cy="50%" innerRadius="65%" outerRadius="90%"
@@ -294,14 +302,19 @@ export default function DashboardHomePage() {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <RechartsTooltip contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
+                  
+                    <RechartsTooltip 
+                      wrapperStyle={{ zIndex: 100 }}
+                      contentStyle={{ 
+                        borderRadius: '1rem', 
+                        border: 'none', 
+                        boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)' // Background solid putih
+                      }} 
+                    />
                   </PieChart>
                 </ResponsiveContainer>
-                {/* Teks di tengah donat */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-2">
-                  <span className="text-3xl font-black text-gray-900">{totalPortofolio}</span>
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Project</span>
-                </div>
+                
               </div>
             ) : (
               <div className="flex-1 flex items-center justify-center text-gray-400 font-medium">
@@ -309,7 +322,7 @@ export default function DashboardHomePage() {
               </div>
             )}
             
-            {/* Custom Legend Donut */}
+       
             <div className="mt-6 flex flex-wrap justify-center gap-3">
                {categoryData.map((entry, index): import("react/jsx-runtime").JSX.Element => (
                  <div key={index} className="flex items-center gap-1.5">

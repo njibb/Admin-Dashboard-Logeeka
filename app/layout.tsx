@@ -15,7 +15,6 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className="antialiased">
-        {/* 🔥 Bungkus children dengan Providers di sini */}
         <Providers>
           {children}
         </Providers>
