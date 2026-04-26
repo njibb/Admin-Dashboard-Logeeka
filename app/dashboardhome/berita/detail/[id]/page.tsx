@@ -5,21 +5,22 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
-
 import { useSession, signOut } from "next-auth/react";
+
+// 🔥 TAMBAHAN 1: Panggil CSS Quill ke halaman detail biar gayanya nggak di-reset Tailwind
+// @ts-expect-error: TypeScript cannot resolve raw CSS file imports
+import 'react-quill-new/dist/quill.snow.css';
 
 export default function DetailBeritaPage() {
   const params = useParams(); 
   const router = useRouter();
   const { id } = params; 
 
- 
   const { data: session, status } = useSession();
 
   const [beritaDetail, setBeritaDetail] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
-
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -31,7 +32,6 @@ export default function DetailBeritaPage() {
     const fetchDetailBerita = async () => {
       setIsLoading(true);
       try {
-        
         const token = (session as any)?.accessToken;
         
         if (!token) return;
@@ -53,7 +53,6 @@ export default function DetailBeritaPage() {
         console.error("Gagal mengambil detail berita:", error);
         
         if (axios.isAxiosError(error) && error.response?.status === 401) {
-       
           signOut({ callbackUrl: 'Login' });
         } else {
           setErrorMsg("Gagal memuat detail berita dari server.");
@@ -63,7 +62,6 @@ export default function DetailBeritaPage() {
       }
     };
 
-   
     if (id && status === "authenticated") {
       fetchDetailBerita();
     }
@@ -92,7 +90,7 @@ export default function DetailBeritaPage() {
           <div className="flex items-center gap-3 mb-2">
             <Link 
               href="/dashboardhome/berita" 
-              className="p-2 bg-white rounded-xl border border-gray-200 text-gray-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all shadow-sm"
+              className="p-2 bg-white rounded-xl border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-all shadow-sm"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -115,7 +113,7 @@ export default function DetailBeritaPage() {
         
         {isLoading ? (
           <div className="py-20 flex flex-col items-center justify-center">
-             <div className="inline-block animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mb-4"></div>
+             <div className="inline-block animate-spin w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full mb-4"></div>
              <p className="text-gray-500 font-medium">Sedang memuat detail berita...</p>
           </div>
         ) : beritaDetail ? (
@@ -137,7 +135,7 @@ export default function DetailBeritaPage() {
               </h1>
             </div>
 
-            {/*  Area Gambar */}
+            {/* Area Gambar */}
             {imageUrl ? (
               <div className="w-full h-64 sm:h-96 rounded-2xl overflow-hidden border border-gray-100 shadow-inner bg-gray-50">
                 <img 
@@ -158,10 +156,14 @@ export default function DetailBeritaPage() {
               </div>
             )}
 
-            {/* Isi Konten */}
-            <div className="prose max-w-none text-gray-700 leading-relaxed text-lg">
+            {/* 🔥 TAMBAHAN 2: Class ql-snow dan ql-editor untuk mengaktifkan gaya Quill */}
+         
+            <div className="text-gray-700 leading-relaxed text-lg ql-snow">
               {beritaDetail.konten_berita ? (
-                 <div dangerouslySetInnerHTML={{ __html: beritaDetail.konten_berita }} />
+                 <div 
+                   className="ql-editor p-0 [&_p]:!mb-4 [&_h1]:!mb-4 [&_h2]:!mb-4 [&_h3]:!mb-4 [&_ul]:!mb-4 [&_ol]:!mb-4 [&_li]:!mb-1" 
+                   dangerouslySetInnerHTML={{ __html: beritaDetail.konten_berita }} 
+                 />
               ) : (
                  <p className="italic text-gray-400">Konten berita kosong.</p>
               )}

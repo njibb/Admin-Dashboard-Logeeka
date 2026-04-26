@@ -23,7 +23,6 @@ export default function ManajemenPortofolioPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   
-  
   const [entriesPerPage, setEntriesPerPage] = useState<number>(10);
 
   useEffect(() => {
@@ -137,7 +136,6 @@ export default function ManajemenPortofolioPage() {
     return titleMatch || categoryMatch;
   });
 
- 
   const displayedPortofolio = filteredPortofolio.slice(0, entriesPerPage);
 
   if (status === "loading") {
@@ -152,9 +150,19 @@ export default function ManajemenPortofolioPage() {
       className="min-h-screen p-6 sm:p-10 font-sans"
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-        <div>
+        
+        <div className="flex items-center gap-4">
           <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Portofolio</h2>
+          {!isLoading && (
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-600 rounded-lg text-sm font-black border border-red-100 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+              {portofolioData.length} Total Data
+            </div>
+          )}
         </div>
+
         <Link 
           href="/dashboardhome/portofolio/tambah" 
           className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-md shadow-red-200"
@@ -208,6 +216,7 @@ export default function ManajemenPortofolioPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/80">
+                <th className="py-4 px-6 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
                 <th className="py-4 px-6 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">Nama Project</th>
                 <th className="py-4 px-6 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">Kategori</th>
                 <th className="py-4 px-6 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Action</th>
@@ -217,6 +226,9 @@ export default function ManajemenPortofolioPage() {
               {isLoading ? (
                 [...Array(5)].map((_, index) => (
                   <tr key={index} className="animate-pulse border-b border-gray-50">
+                    <td className="py-5 px-6">
+                      <div className="h-4 bg-gray-200 rounded-md w-8 mx-auto"></div>
+                    </td>
                     <td className="py-5 px-6">
                       <div className="h-4 bg-gray-200 rounded-md w-3/4"></div>
                     </td>
@@ -230,7 +242,7 @@ export default function ManajemenPortofolioPage() {
                 ))
               ) : filteredPortofolio.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="py-24 text-center">
+                  <td colSpan={4} className="py-24 text-center">
                     <div className="flex flex-col items-center justify-center">
                       <div className="bg-gray-50 p-6 rounded-full mb-6 border border-gray-100 shadow-inner">
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-20 h-20 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -250,10 +262,12 @@ export default function ManajemenPortofolioPage() {
                   </td>
                 </tr>
               ) : (
-
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 displayedPortofolio.map((item: any) => (
                   <tr key={item.id} className="hover:bg-red-50/40 transition-colors group">
+                    <td className="py-4 px-6 border-b border-gray-100 text-sm font-semibold text-gray-900 text-center">
+                      {portofolioData.length - portofolioData.findIndex((p: Portofolio) => p.id === item.id)}
+                    </td>
                     <td className="py-4 px-6 border-b border-gray-100 text-sm font-semibold text-gray-900 max-w-[300px] truncate">
                       {item.title || "Judul Tidak Diketahui"}
                     </td>

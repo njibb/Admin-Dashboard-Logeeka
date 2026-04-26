@@ -5,13 +5,19 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-
 import { useSession, signOut } from "next-auth/react";
+
+// 🔥 TAMBAHAN 1: Import Dynamic dan CSS Quill
+import dynamic from 'next/dynamic';
+
+// @ts-expect-error: TypeScript cannot resolve raw CSS file imports
+import 'react-quill-new/dist/quill.snow.css'; // <-- Tambah -new di sini
+
+// 🔥 TAMBAHAN 2: Deklarasi ReactQuill dengan ssr: false
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false }); // <-- Tambah -new di sini juga
 
 export default function TambahBeritaPage() {
   const router = useRouter();
-  
-  
   const { data: session, status } = useSession();
 
   const [judulBerita, setJudulBerita] = useState("");
@@ -23,7 +29,6 @@ export default function TambahBeritaPage() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -41,18 +46,24 @@ export default function TambahBeritaPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validasi tambahan: Pastikan konten berita tidak kosong (karena Quill kadang menyisakan tag HTML kosong spt <p><br></p>)
+    if (!kontenBerita || kontenBerita === '<p><br></p>') {
+      Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Isi konten berita tidak boleh kosong!' });
+      return;
+    }
+
     setIsLoading(true);
     setErrorMsg("");
 
     try {
-      
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const token = (session as any)?.accessToken;
       if (!token) return;
       
       const formData = new FormData();
       formData.append("judul_berita", judulBerita);
-      formData.append("konten_berita", kontenBerita);
+      formData.append("konten_berita", kontenBerita); // Isi konten berupa HTML dari Quill
       formData.append("single_file_tipe", "MEDIA_FILE"); 
       
       if (fileUpload) {
@@ -85,7 +96,6 @@ export default function TambahBeritaPage() {
       console.error("Gagal menambah berita:", error);
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          
           signOut({ callbackUrl: '/login' });
         } else {
           setErrorMsg(error.response?.data?.message || "Gagal menyimpan data ke server.");
@@ -98,7 +108,6 @@ export default function TambahBeritaPage() {
     }
   };
 
- 
   if (status === "loading") {
     return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
   }
@@ -181,17 +190,18 @@ export default function TambahBeritaPage() {
             />
           </div>
 
-          {/* Textarea Konten Berita */}
+          {/* 🔥 UBAHAN 3: Textarea diganti jadi ReactQuill */}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Isi Konten Berita <span className="text-red-500">*</span></label>
-            <textarea 
-              required
-              rows={8}
-              placeholder="Ketik isi lengkap berita di sini..." 
-              value={kontenBerita}
-              onChange={(e) => setKontenBerita(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all bg-gray-50 focus:bg-white resize-y"
-            ></textarea>
+            <div className="bg-white rounded-xl overflow-hidden border border-gray-300">
+              <ReactQuill 
+                theme="snow" 
+                placeholder="Ketik isi lengkap berita di sini..."
+                value={kontenBerita} 
+                onChange={setKontenBerita} 
+                className="h-64 mb-12" // mb-12 biar toolbar bawah gak ketutup layout
+              />
+            </div>
           </div>
 
           {/* Tombol Action */}
