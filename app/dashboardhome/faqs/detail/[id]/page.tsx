@@ -7,7 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useSession, signOut } from "next-auth/react";
 
-// @ts-expect-error: TypeScript cannot resolve raw CSS file imports
+
 import 'react-quill-new/dist/quill.snow.css';
 
 export default function DetailFaqPage() {

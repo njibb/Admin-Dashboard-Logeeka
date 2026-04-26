@@ -8,7 +8,7 @@ import Swal from 'sweetalert2';
 import { useSession, signOut } from "next-auth/react";
 
 import dynamic from 'next/dynamic';
-// @ts-expect-error: TypeScript cannot resolve raw CSS file imports
+
 import 'react-quill-new/dist/quill.snow.css';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });

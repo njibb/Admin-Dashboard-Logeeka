@@ -7,8 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useSession, signOut } from "next-auth/react";
 
-// 🔥 TAMBAHAN 1: Panggil CSS Quill ke halaman detail biar gayanya nggak di-reset Tailwind
-// @ts-expect-error: TypeScript cannot resolve raw CSS file imports
+
 import 'react-quill-new/dist/quill.snow.css';
 
 export default function DetailBeritaPage() {
