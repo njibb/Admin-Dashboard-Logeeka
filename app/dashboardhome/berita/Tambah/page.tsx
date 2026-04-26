@@ -10,8 +10,7 @@ import { useSession, signOut } from "next-auth/react";
 // 🔥 TAMBAHAN 1: Import Dynamic dan CSS Quill
 import dynamic from 'next/dynamic';
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
+
 import 'react-quill-new/dist/quill.snow.css'; // <-- Tambah -new di sini
 
 // 🔥 TAMBAHAN 2: Deklarasi ReactQuill dengan ssr: false
