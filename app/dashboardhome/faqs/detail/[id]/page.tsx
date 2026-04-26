@@ -6,8 +6,6 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useSession, signOut } from "next-auth/react";
-
-
 import 'react-quill-new/dist/quill.snow.css';
 
 export default function DetailFaqPage() {
