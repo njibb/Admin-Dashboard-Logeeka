@@ -161,7 +161,7 @@ export default function TambahFaqPage() {
 
          <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Jawaban (Konten) <span className="text-red-500">*</span></label>
-            {/* 🔥 UBAHAN: Tambahkan [&_.ql-editor]:text-black di sini */}
+            
             <div className="bg-white rounded-xl overflow-hidden border border-gray-300 [&_.ql-editor]:text-black [&_.ql-editor]:text-base text-black">
               <ReactQuill theme="snow" placeholder="Ketik jawaban lengkap di sini..." value={konten} onChange={setKonten} className="h-64 mb-12" />
             </div>

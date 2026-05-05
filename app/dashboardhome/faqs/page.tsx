@@ -7,7 +7,6 @@ import Swal from 'sweetalert2';
 import { motion } from 'framer-motion';
 import { useSession, signOut } from "next-auth/react";
 
-// Sesuaikan dengan response Postman: menggunakan 'judul' dan 'konten'
 interface Faq {
   id: string;
   judul: string; 
@@ -41,7 +40,6 @@ export default function ManajemenFaqPage() {
       const token = (session as any)?.accessToken;
       if (!token) return;
 
-      // Endpoint GET pagination sesuai Postman
       const response = await axios.get(
         "/api/admin/faq/pagination?currentPage=1&dataPerPage=100&sort=desc&keywords=", 
         {
@@ -90,7 +88,6 @@ export default function ManajemenFaqPage() {
       const token = (session as any)?.accessToken;
       if (!token) return;
 
-      // Endpoint DELETE sesuai Postman
       await axios.delete(`/api/admin/faq/delete/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -272,12 +269,9 @@ export default function ManajemenFaqPage() {
                     <td className="py-4 px-6 border-b border-gray-100 text-sm font-semibold text-gray-900 max-w-[250px] truncate">
                       {item.judul || "Pertanyaan Tidak Diketahui"}
                     </td>
-                    
-                    {/* Karena konten mungkin mengandung tag HTML dari editor, kita bersihkan tag HTML-nya untuk preview di tabel */}
                     <td className="py-4 px-6 border-b border-gray-100 text-sm text-gray-600 max-w-[350px] truncate">
-                      {item.konten ? item.konten.replace(/<[^>]+>/g, '') : "-"}
+                      {item.konten ? item.konten.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ') : "-"}
                     </td>
-                    
                     <td className="py-4 px-6 border-b border-gray-100 text-sm text-center">
                       <div className="flex items-center justify-center gap-2">
                         <Link href={`/dashboardhome/faqs/detail/${item.id}`} title="Lihat Detail" className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">

@@ -155,7 +155,7 @@ export default function DetailBeritaPage() {
               </div>
             )}
 
-            {/* 🔥 TAMBAHAN 2: Class ql-snow dan ql-editor untuk mengaktifkan gaya Quill */}
+            
          
             <div className="text-gray-700 leading-relaxed text-lg ql-snow">
               {beritaDetail.konten_berita ? (

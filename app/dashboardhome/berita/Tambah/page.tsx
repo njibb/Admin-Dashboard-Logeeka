@@ -7,13 +7,13 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useSession, signOut } from "next-auth/react";
 
-// 🔥 TAMBAHAN 1: Import Dynamic dan CSS Quill
+//Import Dynamic dan CSS Quill
 import dynamic from 'next/dynamic';
 
 
-import 'react-quill-new/dist/quill.snow.css'; // <-- Tambah -new di sini
+import 'react-quill-new/dist/quill.snow.css'; 
 
-// 🔥 TAMBAHAN 2: Deklarasi ReactQuill dengan ssr: false
+//Deklarasi 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false }); // <-- Tambah -new di sini juga
 
 export default function TambahBeritaPage() {
@@ -47,7 +47,7 @@ export default function TambahBeritaPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validasi tambahan: Pastikan konten berita tidak kosong (karena Quill kadang menyisakan tag HTML kosong spt <p><br></p>)
+    
     if (!kontenBerita || kontenBerita === '<p><br></p>') {
       Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Isi konten berita tidak boleh kosong!' });
       return;
@@ -190,7 +190,7 @@ export default function TambahBeritaPage() {
             />
           </div>
 
-          {/* 🔥 UBAHAN 3: Textarea diganti jadi ReactQuill */}
+
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Isi Konten Berita <span className="text-red-500">*</span></label>
             <div className="bg-white rounded-xl overflow-hidden border border-gray-300">
@@ -199,7 +199,7 @@ export default function TambahBeritaPage() {
                 placeholder="Ketik isi lengkap berita di sini..."
                 value={kontenBerita} 
                 onChange={setKontenBerita} 
-                className="h-64 mb-12" // mb-12 biar toolbar bawah gak ketutup layout
+                className="h-64 mb-12" 
               />
             </div>
           </div>

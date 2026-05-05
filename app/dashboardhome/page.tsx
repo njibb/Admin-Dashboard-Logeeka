@@ -478,7 +478,7 @@ export default function DashboardHomePage() {
 
         </motion.div>
 
-        {/* 🔥 TAMBAHAN BARU: SECTION FAQ YANG MEMANJANG DI BAWAH GRAFIK */}
+        {/* Section FAQS */}
         <motion.div 
           initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}
           className="bg-white/90 backdrop-blur-xl border border-gray-200 rounded-[2rem] p-6 sm:p-8 shadow-sm flex flex-col mb-10"

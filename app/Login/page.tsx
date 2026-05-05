@@ -31,7 +31,7 @@ export default function LoginPage() {
         password: cleanPassword,
       });
 
-      // 3. Cek hasil dari next-auth
+      
       if (result?.error) {
         
         setErrorMsg("Login gagal. Periksa kembali email dan password Anda.");

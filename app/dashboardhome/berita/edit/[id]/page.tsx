@@ -7,14 +7,14 @@ import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useSession, signOut } from "next-auth/react";
 
-// 🔥 TAMBAHAN 1: Import Swal, Dynamic, dan CSS Quill-new
+
 import Swal from 'sweetalert2';
 import dynamic from 'next/dynamic';
 
 
 import 'react-quill-new/dist/quill.snow.css';
 
-// 🔥 TAMBAHAN 2: Deklarasi ReactQuill dengan ssr: false
+
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 export default function EditBeritaPage() {
@@ -101,7 +101,7 @@ export default function EditBeritaPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 🔥 TAMBAHAN 3: Validasi biar user gak ngesave konten kosong
+    
     if (!kontenBerita || kontenBerita === '<p><br></p>') {
       Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Isi konten berita tidak boleh kosong!' });
       return;
@@ -133,7 +133,7 @@ export default function EditBeritaPage() {
         }
       );
 
-      // 🔥 TAMBAHAN 4: Ganti alert jadul pakai SweetAlert2 yang elegan
+      
       Swal.fire({
         toast: true,
         position: 'top-end',
@@ -226,7 +226,7 @@ export default function EditBeritaPage() {
               />
             </div>
 
-            {/* 🔥 TAMBAHAN 5: Textarea diganti jadi ReactQuill */}
+            
             <div>
               <label className="block text-sm font-black text-black mb-2">Isi Konten Berita <span className="text-red-600">*</span></label>
               <div className="bg-white rounded-xl overflow-hidden border border-gray-300">
@@ -234,7 +234,7 @@ export default function EditBeritaPage() {
                   theme="snow" 
                   value={kontenBerita} 
                   onChange={setKontenBerita} 
-                  className="h-64 mb-12" // mb-12 biar toolbar bawah gak ketutup layout
+                  className="h-64 mb-12" 
                 />
               </div>
             </div>
