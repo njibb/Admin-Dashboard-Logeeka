@@ -29,7 +29,7 @@ export default function TambahFaqPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/Login");
+      router.push("/login");
     }
   }, [status, router]);
 
@@ -92,7 +92,7 @@ export default function TambahFaqPage() {
       console.error("Gagal menambah FAQ:", error);
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          signOut({ callbackUrl: '/Login' });
+          signOut({ callbackUrl: '/login' });
         } else {
           setErrorMsg(error.response?.data?.message || "Gagal menyimpan data ke server.");
         }

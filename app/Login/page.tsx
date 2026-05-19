@@ -1,9 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
 import { signIn } from "next-auth/react";
+// 🔥 Import hCaptcha komponen
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,15 +12,42 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  
+  // State khusus untuk mendeteksi apakah lagi di localhost atau bukan (menghindari error Hydration Next.js)
+  const [isLocalhost, setIsLocalhost] = useState(false);
+  
+  // Menggunakan tipe asli HCaptcha biar TypeScript dan ESLint seneng
+  const captchaRef = useRef<HCaptcha>(null);
+
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   
   const router = useRouter();
 
+  // 🔥 Mengecek apakah ini berjalan di komputer lokal (hanya saat komponen pertama kali di-mount)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsLocalhost(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+    }
+  }, []);
+
+  // Fungsi penangkap token saat user sukses verifikasi captcha
+  const onVerificationSuccess = (token: string) => {
+    setCaptchaToken(token);
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMsg("");
+
+    // Validasi client-side wajib nyelesaiin captcha dulu
+    if (!captchaToken) {
+      setErrorMsg("Silakan selesaikan hCaptcha terlebih dahulu.");
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const cleanEmail = email.trim();
@@ -29,22 +57,28 @@ export default function LoginPage() {
         redirect: false, 
         username: cleanEmail, 
         password: cleanPassword,
+        // Token dioper ke backend credentials provider buat divalidasi Mas Bayu/Bang Hafizh
+        captchaToken: captchaToken, 
       });
 
-      
       if (result?.error) {
-        
         setErrorMsg("Login gagal. Periksa kembali email dan password Anda.");
-      } else if (result?.ok) {
         
+        // Kalau gagal login, reset captcha biar bisa dicoba ulang oleh admin
+        captchaRef.current?.resetCaptcha();
+        setCaptchaToken(null);
+      } else if (result?.ok) {
         router.push("/dashboardhome");
-
         router.refresh(); 
       }
 
     } catch (error) {
       console.error("Error Login:", error);
       setErrorMsg("Terjadi kesalahan sistem yang tidak terduga.");
+      
+      // Reset captcha juga kalau ada error sistem crash
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken(null);
     } finally {
       setIsLoading(false);
     }
@@ -123,8 +157,23 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {/* Kontainer Widget hCaptcha */}
+          <div className="flex justify-center py-2 overflow-hidden">
+            <HCaptcha
+              ref={captchaRef}
+              // 🔥 TRICK SAKTI: Auto-Switch Key. Lokal pakai dummy, Production pakai yang asli!
+              sitekey={
+                isLocalhost 
+                  ? "de528f20-20a4-4ee8-a2b6-a97a054c5aae" 
+                  : (process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || "de528f20-20a4-4ee8-a2b6-a97a054c5aae")
+              }
+              onVerify={onVerificationSuccess}
+              onExpire={() => setCaptchaToken(null)}
+            />
+          </div>
+
           {/* Tombol Action */}
-          <div className="pt-6">
+          <div className="pt-2">
             <button 
               type="submit" 
               disabled={isLoading}

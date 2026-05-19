@@ -52,7 +52,7 @@ export default function DetailBeritaPage() {
         console.error("Gagal mengambil detail berita:", error);
         
         if (axios.isAxiosError(error) && error.response?.status === 401) {
-          signOut({ callbackUrl: 'Login' });
+          signOut({ callbackUrl: 'login' });
         } else {
           setErrorMsg("Gagal memuat detail berita dari server.");
         }

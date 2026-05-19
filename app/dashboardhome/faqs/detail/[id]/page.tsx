@@ -42,7 +42,7 @@ export default function DetailFaqPage() {
       } catch (error) {
         console.error("Gagal mengambil detail FAQ:", error);
         if (axios.isAxiosError(error) && error.response?.status === 401) {
-          signOut({ callbackUrl: 'Login' });
+          signOut({ callbackUrl: 'login' });
         } else {
           setErrorMsg("Gagal memuat detail FAQ dari server.");
         }

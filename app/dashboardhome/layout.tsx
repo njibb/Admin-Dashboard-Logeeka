@@ -14,7 +14,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const handleLogoutSuccess = async () => {
     setShowLogoutModal(false);
     await signOut({ redirect: false });
-    window.location.replace('/Login');
+    window.location.replace('/login');
   };
 
   return (

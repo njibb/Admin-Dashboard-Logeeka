@@ -20,16 +20,34 @@ export default function ManajemenPortofolioPage() {
 
   const [portofolioData, setPortofolioData] = useState<Portofolio[]>([]); 
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState(""); // State nahan API call
+  
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   
+  // State Pagination Server-Side
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [entriesPerPage, setEntriesPerPage] = useState<number>(10);
+  const [totalDataServer, setTotalDataServer] = useState<number>(0);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
     }
   }, [status, router]);
+
+  // Efek Debounce: Nunggu user berenti ngetik 500ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Reset ke halaman 1 kalau kata pencarian atau jumlah entri berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, entriesPerPage]);
 
   const fetchPortofolio = async () => {
     setIsLoading(true);
@@ -40,8 +58,9 @@ export default function ManajemenPortofolioPage() {
       const token = (session as any)?.accessToken;
       if (!token) return;
 
+      // 🔥 UBAHAN: Endpoint API sekarang dinamis (Server-Side)
       const response = await axios.get(
-        "/api/project-profile/pagination?currentPage=1&dataPerPage=100&sort=desc&keywords=", 
+        `/api/project-profile/pagination?currentPage=${currentPage}&dataPerPage=${entriesPerPage}&sort=desc&keywords=${debouncedSearch}`, 
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -52,8 +71,12 @@ export default function ManajemenPortofolioPage() {
 
       if (response.data && response.data.result && response.data.result.data) {
         setPortofolioData(response.data.result.data);
+        setTotalDataServer(response.data.result.count || response.data.result.data.length);
       } else if (response.data && response.data.data) {
         setPortofolioData(response.data.data);
+        setTotalDataServer(response.data.count || response.data.data.length);
+      } else {
+        setPortofolioData([]);
       }
 
     } catch (error) {
@@ -118,6 +141,7 @@ export default function ManajemenPortofolioPage() {
     }
   };
 
+  // 🔥 UBAHAN: Panggil fetch tiap state berubah
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tokenSiap = (session as any)?.accessToken;
@@ -126,17 +150,10 @@ export default function ManajemenPortofolioPage() {
       fetchPortofolio();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, session]);
+  }, [status, session, currentPage, entriesPerPage, debouncedSearch]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const filteredPortofolio = portofolioData.filter((item: any) => {
-    const searchLower = searchTerm.toLowerCase();
-    const titleMatch = (item.title || "").toLowerCase().includes(searchLower);
-    const categoryMatch = (item.category_code || "").toLowerCase().includes(searchLower);
-    return titleMatch || categoryMatch;
-  });
-
-  const displayedPortofolio = filteredPortofolio.slice(0, entriesPerPage);
+  // Hapus filter manual, pakai data asli dari API
+  const displayedPortofolio = portofolioData;
 
   if (status === "loading") {
     return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
@@ -158,7 +175,7 @@ export default function ManajemenPortofolioPage() {
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
               </svg>
-              {portofolioData.length} Total Data
+              {totalDataServer > 0 ? totalDataServer : portofolioData.length} Total Data
             </div>
           )}
         </div>
@@ -201,7 +218,7 @@ export default function ManajemenPortofolioPage() {
           <div className="relative w-full sm:w-64">
             <input 
               type="text" 
-              placeholder="Search portofolio..." 
+              placeholder="Cari data Porotofolio" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-red-500 bg-gray-50 focus:bg-white transition-all outline-none"
@@ -224,23 +241,15 @@ export default function ManajemenPortofolioPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                [...Array(5)].map((_, index) => (
+                [...Array(entriesPerPage)].map((_, index) => (
                   <tr key={index} className="animate-pulse border-b border-gray-50">
-                    <td className="py-5 px-6">
-                      <div className="h-4 bg-gray-200 rounded-md w-8 mx-auto"></div>
-                    </td>
-                    <td className="py-5 px-6">
-                      <div className="h-4 bg-gray-200 rounded-md w-3/4"></div>
-                    </td>
-                    <td className="py-5 px-6">
-                      <div className="h-6 bg-gray-200 rounded-lg w-24"></div>
-                    </td>
-                    <td className="py-5 px-6">
-                      <div className="h-8 bg-gray-200 rounded-lg w-28 mx-auto"></div>
-                    </td>
+                    <td className="py-5 px-6"><div className="h-4 bg-gray-200 rounded-md w-8 mx-auto"></div></td>
+                    <td className="py-5 px-6"><div className="h-4 bg-gray-200 rounded-md w-3/4"></div></td>
+                    <td className="py-5 px-6"><div className="h-6 bg-gray-200 rounded-lg w-24"></div></td>
+                    <td className="py-5 px-6"><div className="h-8 bg-gray-200 rounded-lg w-28 mx-auto"></div></td>
                   </tr>
                 ))
-              ) : filteredPortofolio.length === 0 ? (
+              ) : displayedPortofolio.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="py-24 text-center">
                     <div className="flex flex-col items-center justify-center">
@@ -263,10 +272,11 @@ export default function ManajemenPortofolioPage() {
                 </tr>
               ) : (
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                displayedPortofolio.map((item: any) => (
+                displayedPortofolio.map((item: any, index: number) => (
                   <tr key={item.id} className="hover:bg-red-50/40 transition-colors group">
                     <td className="py-4 px-6 border-b border-gray-100 text-sm font-semibold text-gray-900 text-center">
-                      {portofolioData.length - portofolioData.findIndex((p: Portofolio) => p.id === item.id)}
+                      {/* Penomoran dinamis sesuai urutan halaman */}
+                      {(currentPage - 1) * entriesPerPage + index + 1}
                     </td>
                     <td className="py-4 px-6 border-b border-gray-100 text-sm font-semibold text-gray-900 max-w-[300px] truncate">
                       {item.title || "Judul Tidak Diketahui"}
@@ -295,6 +305,30 @@ export default function ManajemenPortofolioPage() {
             </tbody>
           </table>
         </div>
+
+        {/* 🔥 UBAHAN: Tombol Pagination Server-Side */}
+        <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50">
+          <span className="text-sm text-gray-600 font-medium">
+            Halaman {currentPage}
+          </span>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1 || isLoading}
+              className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${currentPage === 1 || isLoading ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'}`}
+            >
+              Previous
+            </button>
+            <button 
+              onClick={() => setCurrentPage(prev => prev + 1)}
+              disabled={displayedPortofolio.length < entriesPerPage || isLoading}
+              className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${displayedPortofolio.length < entriesPerPage || isLoading ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'}`}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+
       </div>
     </motion.div>
   );

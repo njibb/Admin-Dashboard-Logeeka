@@ -9,12 +9,33 @@ import { useSession, signOut } from "next-auth/react";
 
 //Import Dynamic dan CSS Quill
 import dynamic from 'next/dynamic';
-
-
 import 'react-quill-new/dist/quill.snow.css'; 
 
 //Deklarasi 
-const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false }); // <-- Tambah -new di sini juga
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+
+// ==========================================================================
+// 🔥 KONFIGURASI SAKTI ANTI-STYLE SILUMAN (Sesuai Arahan Bang Hafizh)
+// ==========================================================================
+const modules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+    ['link', 'clean'] // Tombol 'clean' penting buat hapus format manual
+  ],
+  clipboard: {
+    matchVisual: false, // Mencegah teks hasil copas membawa style bawaan dari luar
+  }
+};
+
+// Batasi format HTML yang boleh dihasilkan. Jangan masukkan 'color' atau 'background'!
+const formats = [
+  'header',
+  'bold', 'italic', 'underline', 'strike', 'blockquote',
+  'list', 
+  'link'
+];
 
 export default function TambahBeritaPage() {
   const router = useRouter();
@@ -32,7 +53,7 @@ export default function TambahBeritaPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/Login");
+      router.push("/login");
     }
   }, [status, router]);
 
@@ -46,7 +67,6 @@ export default function TambahBeritaPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     
     if (!kontenBerita || kontenBerita === '<p><br></p>') {
       Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Isi konten berita tidak boleh kosong!' });
@@ -63,7 +83,7 @@ export default function TambahBeritaPage() {
       
       const formData = new FormData();
       formData.append("judul_berita", judulBerita);
-      formData.append("konten_berita", kontenBerita); // Isi konten berupa HTML dari Quill
+      formData.append("konten_berita", kontenBerita); // HTML bersih tanpa inline style warna putih
       formData.append("single_file_tipe", "MEDIA_FILE"); 
       
       if (fileUpload) {
@@ -160,7 +180,6 @@ export default function TambahBeritaPage() {
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Upload Gambar (Banner Berita) <span className="text-red-500">*</span></label>
             
-            {/* Preview Gambar jika sudah dipilih */}
             {imagePreview && (
               <div className="mb-4 relative w-full sm:w-64 h-40 rounded-xl overflow-hidden border border-gray-200">
                 <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
@@ -190,15 +209,18 @@ export default function TambahBeritaPage() {
             />
           </div>
 
-
+          {/* Area Isi Konten Berita */}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Isi Konten Berita <span className="text-red-500">*</span></label>
-            <div className="bg-white rounded-xl overflow-hidden border border-gray-300">
+            {/* Bungkus text-gray-900 bg-white buat proteksi ekstra */}
+            <div className="text-gray-900 bg-white rounded-xl overflow-hidden border border-gray-300">
               <ReactQuill 
                 theme="snow" 
                 placeholder="Ketik isi lengkap berita di sini..."
                 value={kontenBerita} 
                 onChange={setKontenBerita} 
+                modules={modules}   
+                formats={formats}   
                 className="h-64 mb-12" 
               />
             </div>
@@ -218,7 +240,7 @@ export default function TambahBeritaPage() {
               className="px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all shadow-md shadow-red-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isLoading && (
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/xl" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
               )}
               {isLoading ? "Menyimpan..." : "Simpan Berita"}
             </button>

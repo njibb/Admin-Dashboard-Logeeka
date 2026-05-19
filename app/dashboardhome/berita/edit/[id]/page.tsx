@@ -7,15 +7,35 @@ import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useSession, signOut } from "next-auth/react";
 
-
 import Swal from 'sweetalert2';
 import dynamic from 'next/dynamic';
 
-
 import 'react-quill-new/dist/quill.snow.css';
 
-
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+
+// ==========================================================================
+// 🔥 KONFIGURASI ANTI-STYLE SILUMAN (Sesuai Kebijakan Ketat Bang Hafizh)
+// ==========================================================================
+const modules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+    ['link', 'clean']
+  ],
+  clipboard: {
+    matchVisual: false, // Menghapus bawaan style eksternal saat copas teks
+  }
+};
+
+// Hanya mendaftarkan format esensial, tanpa 'color' dan 'background'
+const formats = [
+  'header',
+  'bold', 'italic', 'underline', 'strike', 'blockquote',
+  'list', // Kunci utama menangani ordered & bullet list tanpa error
+  'link'
+];
 
 export default function EditBeritaPage() {
   const params = useParams();
@@ -77,7 +97,7 @@ export default function EditBeritaPage() {
         console.error("Gagal mengambil data lama:", error);
         
         if (axios.isAxiosError(error) && error.response?.status === 401) {
-          signOut({ callbackUrl: '/Login' });
+          signOut({ callbackUrl: '/login' });
         } else {
           setErrorMsg("Gagal memuat data lama dari server.");
         }
@@ -101,7 +121,6 @@ export default function EditBeritaPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    
     if (!kontenBerita || kontenBerita === '<p><br></p>') {
       Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Isi konten berita tidak boleh kosong!' });
       return;
@@ -133,7 +152,6 @@ export default function EditBeritaPage() {
         }
       );
 
-      
       Swal.fire({
         toast: true,
         position: 'top-end',
@@ -226,14 +244,16 @@ export default function EditBeritaPage() {
               />
             </div>
 
-            
+            {/* Area Text Editor */}
             <div>
               <label className="block text-sm font-black text-black mb-2">Isi Konten Berita <span className="text-red-600">*</span></label>
-              <div className="bg-white rounded-xl overflow-hidden border border-gray-300">
+              <div className="text-gray-900 bg-white rounded-xl overflow-hidden border border-gray-300">
                 <ReactQuill 
                   theme="snow" 
                   value={kontenBerita} 
                   onChange={setKontenBerita} 
+                  modules={modules}  
+                  formats={formats}   
                   className="h-64 mb-12" 
                 />
               </div>

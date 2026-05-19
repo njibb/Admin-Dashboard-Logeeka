@@ -63,7 +63,7 @@ export default function DashboardHomePage() {
 
   useEffect((): void => {
     if (status === "unauthenticated") {
-      router.push("/Login");
+      router.push("/login");
     }
   }, [status, router]);
 
@@ -103,7 +103,7 @@ export default function DashboardHomePage() {
       console.error("DASHBOARD FETCH ERROR:", error);
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          signOut({ callbackUrl: '/Login' });
+          signOut({ callbackUrl: '/login' });
         } else {
           Swal.fire({
             icon: 'error',
@@ -507,7 +507,8 @@ export default function DashboardHomePage() {
                      {faq.judul}
                    </h4>
                    <p className="text-xs text-gray-500 line-clamp-3 leading-relaxed mt-auto">
-                     {faq.konten ? faq.konten.replace(/<[^>]+>/g, '') : "Tidak ada detail konten."}
+                     {/* 🔥 UBAHAN: Regex tambahan untuk ngebersihin &nbsp; ditambahkan disini */}
+                     {faq.konten ? faq.konten.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ') : "Tidak ada detail konten."}
                    </p>
                 </div>
               ))
