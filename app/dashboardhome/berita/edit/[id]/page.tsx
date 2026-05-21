@@ -6,17 +6,12 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useSession, signOut } from "next-auth/react";
-
 import Swal from 'sweetalert2';
 import dynamic from 'next/dynamic';
-
 import 'react-quill-new/dist/quill.snow.css';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
-// ==========================================================================
-// 🔥 KONFIGURASI ANTI-STYLE SILUMAN (Sesuai Kebijakan Ketat Bang Hafizh)
-// ==========================================================================
 const modules = {
   toolbar: [
     [{ 'header': [1, 2, 3, false] }],
@@ -25,15 +20,14 @@ const modules = {
     ['link', 'clean']
   ],
   clipboard: {
-    matchVisual: false, // Menghapus bawaan style eksternal saat copas teks
+    matchVisual: false, 
   }
 };
 
-// Hanya mendaftarkan format esensial, tanpa 'color' dan 'background'
 const formats = [
   'header',
   'bold', 'italic', 'underline', 'strike', 'blockquote',
-  'list', // Kunci utama menangani ordered & bullet list tanpa error
+  'list', 
   'link'
 ];
 
@@ -183,7 +177,6 @@ export default function EditBeritaPage() {
   return (
     <div className="min-h-screen p-6 sm:p-10 font-sans">
       
-      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -200,7 +193,6 @@ export default function EditBeritaPage() {
         <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-200 font-bold">{errorMsg}</div>
       )}
 
-      {/* Form Area */}
       <div className="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden p-6 sm:p-8 max-w-4xl">
         {isLoading ? (
           <div className="py-10 text-center">
@@ -210,7 +202,6 @@ export default function EditBeritaPage() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             
-            {/* Input Judul */}
             <div>
               <label className="block text-sm font-black text-black mb-2">Judul Berita <span className="text-red-600">*</span></label>
               <input 
@@ -221,7 +212,6 @@ export default function EditBeritaPage() {
               />
             </div>
 
-            {/* Input Upload Gambar */}
             <div>
               <label className="block text-sm font-black text-black mb-2">Upload Gambar Baru (Opsional)</label>
               <p className="text-xs text-black font-medium mb-3">Biarkan kosong jika tidak ingin mengubah gambar.</p>
@@ -230,7 +220,6 @@ export default function EditBeritaPage() {
                 <div className="mb-4 relative w-full sm:w-64 h-40 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
                   <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                   
-                  {/* Tombol Hapus Gambar */}
                   {fileUpload && (
                     <button type="button" onClick={() => { setFileUpload(null); setImagePreview(null); if(fileInputRef.current) fileInputRef.current.value=''; }} className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-lg hover:bg-red-700 shadow-md">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -244,7 +233,6 @@ export default function EditBeritaPage() {
               />
             </div>
 
-            {/* Area Text Editor */}
             <div>
               <label className="block text-sm font-black text-black mb-2">Isi Konten Berita <span className="text-red-600">*</span></label>
               <div className="text-gray-900 bg-white rounded-xl overflow-hidden border border-gray-300">
@@ -259,7 +247,6 @@ export default function EditBeritaPage() {
               </div>
             </div>
 
-            {/* Tombol Aksi */}
             <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
               <Link href="/dashboardhome/berita" className="px-6 py-3 bg-white border border-gray-300 text-black font-black rounded-xl hover:bg-gray-100 transition-all">Batal</Link>
               <button type="submit" disabled={isSaving} className="px-8 py-3 bg-black hover:bg-gray-800 text-white font-black rounded-xl transition-all disabled:opacity-70 flex items-center gap-2 shadow-md">

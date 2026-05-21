@@ -1,18 +1,35 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useSession, signOut } from "next-auth/react";
-
 import dynamic from 'next/dynamic';
-
 import 'react-quill-new/dist/quill.snow.css';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+
+const modules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+    ['link', 'clean']
+  ],
+  clipboard: {
+    matchVisual: false, 
+  }
+};
+
+const formats = [
+  'header',
+  'bold', 'italic', 'underline', 'strike', 'blockquote',
+  'list', 
+  'link'
+];
 
 export default function EditFaqPage() {
   const params = useParams();
@@ -57,7 +74,6 @@ export default function EditFaqPage() {
           let imageUrl = null;
           if (dataAkurat?.single_file_object?.path_media) {
             const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-            // Handle if path_media is already a full URL
             if(dataAkurat.single_file_object.path_media.startsWith("http")) {
                imageUrl = dataAkurat.single_file_object.path_media;
             } else {
@@ -188,8 +204,15 @@ export default function EditFaqPage() {
 
             <div>
               <label className="block text-sm font-black text-black mb-2">Jawaban (Konten) <span className="text-red-600">*</span></label>
-              <div className="bg-white rounded-xl overflow-hidden border border-gray-300">
-                <ReactQuill theme="snow" value={konten} onChange={setKonten} className="h-64 mb-12" />
+              <div className="bg-white rounded-xl overflow-hidden border border-gray-300 [&_.ql-editor]:text-black [&_.ql-editor]:text-base text-black">
+                <ReactQuill 
+                  theme="snow" 
+                  value={konten} 
+                  onChange={setKonten} 
+                  modules={modules}
+                  formats={formats}
+                  className="h-64 mb-12" 
+                />
               </div>
             </div>
 

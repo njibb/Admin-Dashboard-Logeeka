@@ -6,12 +6,29 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useSession, signOut } from "next-auth/react";
-
 import dynamic from 'next/dynamic';
-
 import 'react-quill-new/dist/quill.snow.css';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+
+const modules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+    ['link', 'clean']
+  ],
+  clipboard: {
+    matchVisual: false, 
+  }
+};
+
+const formats = [
+  'header',
+  'bold', 'italic', 'underline', 'strike', 'blockquote',
+  'list', 
+  'link'
+];
 
 export default function TambahFaqPage() {
   const router = useRouter();
@@ -163,7 +180,15 @@ export default function TambahFaqPage() {
             <label className="block text-sm font-bold text-gray-700 mb-2">Jawaban (Konten) <span className="text-red-500">*</span></label>
             
             <div className="bg-white rounded-xl overflow-hidden border border-gray-300 [&_.ql-editor]:text-black [&_.ql-editor]:text-base text-black">
-              <ReactQuill theme="snow" placeholder="Ketik jawaban lengkap di sini..." value={konten} onChange={setKonten} className="h-64 mb-12" />
+              <ReactQuill 
+                theme="snow" 
+                placeholder="Ketik jawaban lengkap di sini..." 
+                value={konten} 
+                onChange={setKonten} 
+                modules={modules}
+                formats={formats}
+                className="h-64 mb-12" 
+              />
             </div>
           </div>
           

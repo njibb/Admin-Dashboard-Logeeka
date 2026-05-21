@@ -6,17 +6,11 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useSession, signOut } from "next-auth/react";
-
-// 🔥 UBAHAN: Import Dynamic dan CSS Quill
 import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css'; 
 
-// Deklarasi Komponen Quill secara dinamis
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
-// ==========================================================================
-// 🔥 KONFIGURASI ANTI-STYLE SILUMAN (Sesuai Kebijakan Ketat Bang Hafizh)
-// ==========================================================================
 const modules = {
   toolbar: [
     [{ 'header': [1, 2, 3, false] }],
@@ -40,13 +34,13 @@ export default function TambahPortofolioPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-  // ================= STATE & REFS =================
   const [title, setTitle] = useState("");
   const [projectUrl, setProjectUrl] = useState("");
   const [categoryCode, setCategoryCode] = useState("marketing_communication"); 
-  const [description, setDescription] = useState(""); // 🔥 UBAHAN: State untuk Text Editor
+  const [description, setDescription] = useState(""); 
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -58,7 +52,6 @@ export default function TambahPortofolioPage() {
     }
   }, [status, router]);
 
-  // ================= EVENT HANDLERS =================
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -70,7 +63,6 @@ export default function TambahPortofolioPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 🔥 UBAHAN: Validasi Text Editor tidak boleh kosong
     if (!description || description === '<p><br></p>') {
       Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Deskripsi detail project tidak boleh kosong!' });
       return;
@@ -88,7 +80,7 @@ export default function TambahPortofolioPage() {
       formData.append("title", title);
       formData.append("project_url", projectUrl);
       formData.append("category_code", categoryCode);
-      formData.append("description", description); // 🔥 UBAHAN: Mengirim konten HTML bersih ke API
+      formData.append("description", description); 
       
       if (fileUpload) {
         formData.append("single_thumbnail_upload", fileUpload); 
@@ -145,7 +137,6 @@ export default function TambahPortofolioPage() {
   return (
     <div className="min-h-screen p-6 sm:p-10 font-sans">
       
-      {/* ================= HEADER HALAMAN ================= */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -169,11 +160,9 @@ export default function TambahPortofolioPage() {
         </div>
       )}
 
-      {/* ================= FORM KARTU ================= */}
       <div className="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden p-6 sm:p-8 max-w-4xl">
         <form onSubmit={handleSubmit} className="space-y-6">
           
-          {/* Judul Project */}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Judul Project <span className="text-red-500">*</span></label>
             <input 
@@ -187,7 +176,6 @@ export default function TambahPortofolioPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* URL Project */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">URL Project <span className="text-red-500">*</span></label>
               <input 
@@ -200,7 +188,6 @@ export default function TambahPortofolioPage() {
               />
             </div>
 
-            {/* Kategori Project */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">Kategori Project <span className="text-red-500">*</span></label>
               <select 
@@ -216,7 +203,6 @@ export default function TambahPortofolioPage() {
             </div>
           </div>
 
-          {/* 🔥 UBAHAN: Komponen Text Editor Deskripsi Project */}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Deskripsi / Detail Project <span className="text-red-500">*</span></label>
             <div className="text-gray-900 bg-white rounded-xl overflow-hidden border border-gray-300">
@@ -232,7 +218,6 @@ export default function TambahPortofolioPage() {
             </div>
           </div>
 
-          {/* Upload Thumbnail */}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Upload Thumbnail Project <span className="text-red-500">*</span></label>
             {imagePreview && (
@@ -262,7 +247,6 @@ export default function TambahPortofolioPage() {
             />
           </div>
 
-          {/* ================= TOMBOL AKSI ================= */}
           <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
             <Link 
               href="/dashboardhome/portofolio"

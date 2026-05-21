@@ -14,10 +14,10 @@ const ScrambleNumber = ({ value }: { value: string | number }): import("react/js
   const [display, setDisplay] = useState<string | number>("...");
 
   useEffect((): (() => void) | undefined => {
-  if (value === "...") return;
-  const duration = 800; 
-  const interval = 40; 
-  let elapsed = 0;     
+    if (value === "...") return;
+    const duration = 800; 
+    const interval = 40; 
+    let elapsed = 0;     
   
     const timer = setInterval((): void => {
       elapsed += interval;
@@ -53,11 +53,9 @@ export default function DashboardHomePage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [rawFaq, setRawFaq] = useState<any[]>([]);
 
-  // State untuk Filter Berita
   const [selectedYear, setSelectedYear] = useState<string>("Semua");
   const [selectedMonth, setSelectedMonth] = useState<string>("Semua");
 
-  // State untuk Filter Portofolio
   const [selectedPortoYear, setSelectedPortoYear] = useState<string>("Semua");
   const [selectedPortoMonth, setSelectedPortoMonth] = useState<string>("Semua");
 
@@ -507,7 +505,6 @@ export default function DashboardHomePage() {
                      {faq.judul}
                    </h4>
                    <p className="text-xs text-gray-500 line-clamp-3 leading-relaxed mt-auto">
-                     {/* 🔥 UBAHAN: Regex tambahan untuk ngebersihin &nbsp; ditambahkan disini */}
                      {faq.konten ? faq.konten.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ') : "Tidak ada detail konten."}
                    </p>
                 </div>

@@ -42,7 +42,7 @@ export default function DetailFaqPage() {
       } catch (error) {
         console.error("Gagal mengambil detail FAQ:", error);
         if (axios.isAxiosError(error) && error.response?.status === 401) {
-          signOut({ callbackUrl: 'login' });
+          signOut({ callbackUrl: '/login' });
         } else {
           setErrorMsg("Gagal memuat detail FAQ dari server.");
         }
@@ -52,7 +52,7 @@ export default function DetailFaqPage() {
     };
 
     if (id && status === "authenticated") fetchDetailFaq();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [id, status, session]);
 
   if (status === "loading") {

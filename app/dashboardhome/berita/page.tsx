@@ -21,12 +21,11 @@ export default function ManajemenBeritaPage() {
 
   const [beritaData, setBeritaData] = useState<Berita[]>([]); 
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState(""); // State nahan API call
+  const [debouncedSearch, setDebouncedSearch] = useState(""); 
   
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   
-  // State Pagination Server-Side
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [entriesPerPage, setEntriesPerPage] = useState<number>(10);
   const [totalDataServer, setTotalDataServer] = useState<number>(0);
@@ -37,7 +36,6 @@ export default function ManajemenBeritaPage() {
     }
   }, [status, router]);
 
-  // Efek Debounce: Nunggu user berenti ngetik 500ms
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
@@ -45,7 +43,6 @@ export default function ManajemenBeritaPage() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Reset ke halaman 1 kalau kata pencarian atau jumlah entri berubah
   useEffect(() => {
     setCurrentPage(1);
   }, [debouncedSearch, entriesPerPage]);
@@ -59,7 +56,6 @@ export default function ManajemenBeritaPage() {
       const token = (session as any)?.accessToken;
       if (!token) return;
 
-      // 🔥 UBAHAN: Endpoint API sekarang dinamis (Server-Side)
       const response = await axios.get(
         `/api/admin/berita/pagination?sortBy=waktu_posting&sort=desc&currentPage=${currentPage}&dataPerPage=${entriesPerPage}&keywords=${debouncedSearch}`, 
         {
@@ -142,7 +138,6 @@ export default function ManajemenBeritaPage() {
     }
   };
 
-  // 🔥 UBAHAN: Panggil fetch tiap state berubah
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tokenSiap = (session as any)?.accessToken;
@@ -153,7 +148,6 @@ export default function ManajemenBeritaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, session, currentPage, entriesPerPage, debouncedSearch]);
 
-  // Hapus filter manual, pakai data asli dari API
   const displayedBerita = beritaData;
 
   if (status === "loading") {
@@ -287,7 +281,6 @@ export default function ManajemenBeritaPage() {
                 displayedBerita.map((item, index) => (
                   <tr key={item.id} className="hover:bg-red-50/40 transition-colors group">
                     <td className="py-4 px-6 border-b border-gray-100 text-sm font-semibold text-gray-900 text-center">
-                      {/* Penomoran dinamis sesuai urutan halaman */}
                       {(currentPage - 1) * entriesPerPage + index + 1}
                     </td>
                     <td className="py-4 px-6 border-b border-gray-100 text-sm font-semibold text-gray-900 max-w-[300px] truncate">
@@ -333,7 +326,6 @@ export default function ManajemenBeritaPage() {
           </table>
         </div>
         
-        {/* 🔥 UBAHAN: Tombol Pagination Server-Side */}
         <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50">
           <span className="text-sm text-gray-600 font-medium">
             Halaman {currentPage}

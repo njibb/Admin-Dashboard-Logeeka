@@ -1,38 +1,27 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-// 🔥 Import hCaptcha komponen
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  
-  // State khusus untuk mendeteksi apakah lagi di localhost atau bukan (menghindari error Hydration Next.js)
   const [isLocalhost, setIsLocalhost] = useState(false);
   
-  // Menggunakan tipe asli HCaptcha biar TypeScript dan ESLint seneng
   const captchaRef = useRef<HCaptcha>(null);
-
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  
   const router = useRouter();
 
-  // 🔥 Mengecek apakah ini berjalan di komputer lokal (hanya saat komponen pertama kali di-mount)
   useEffect(() => {
     if (typeof window !== "undefined") {
       setIsLocalhost(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
     }
   }, []);
 
-  // Fungsi penangkap token saat user sukses verifikasi captcha
   const onVerificationSuccess = (token: string) => {
     setCaptchaToken(token);
   };
@@ -42,7 +31,6 @@ export default function LoginPage() {
     setIsLoading(true);
     setErrorMsg("");
 
-    // Validasi client-side wajib nyelesaiin captcha dulu
     if (!captchaToken) {
       setErrorMsg("Silakan selesaikan hCaptcha terlebih dahulu.");
       setIsLoading(false);
@@ -57,26 +45,20 @@ export default function LoginPage() {
         redirect: false, 
         username: cleanEmail, 
         password: cleanPassword,
-        // Token dioper ke backend credentials provider buat divalidasi Mas Bayu/Bang Hafizh
         captchaToken: captchaToken, 
       });
 
       if (result?.error) {
         setErrorMsg("Login gagal. Periksa kembali email dan password Anda.");
-        
-        // Kalau gagal login, reset captcha biar bisa dicoba ulang oleh admin
         captchaRef.current?.resetCaptcha();
         setCaptchaToken(null);
       } else if (result?.ok) {
         router.push("/dashboardhome");
         router.refresh(); 
       }
-
     } catch (error) {
       console.error("Error Login:", error);
       setErrorMsg("Terjadi kesalahan sistem yang tidak terduga.");
-      
-      // Reset captcha juga kalau ada error sistem crash
       captchaRef.current?.resetCaptcha();
       setCaptchaToken(null);
     } finally {
@@ -86,18 +68,16 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative flex items-center justify-center bg-[#fff5f5] overflow-hidden font-sans p-4">
-      
-      {/* BACKGROUND MESH */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-red-300 rounded-full mix-blend-multiply filter blur-[120px] opacity-70"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-rose-400 rounded-full mix-blend-multiply filter blur-[150px] opacity-60"></div>
       <div className="absolute top-[20%] left-[40%] w-[400px] h-[400px] bg-orange-200 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-pulse"></div>
 
-      {/* KARTU LOGIN */}
       <div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(220,38,38,0.25)] p-8 sm:p-12 border border-white">
-        
         <div className="text-center mb-8">
           <div className="flex justify-center items-center gap-2 mb-6">
-            <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center"><span className="text-white font-bold text-xl">L</span></div>
+            <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-xl">L</span>
+            </div>
             <span className="text-xl font-bold text-gray-800 tracking-wider">LOGEEKA</span>
           </div>
           <h1 className="text-2xl font-extrabold text-gray-900 mb-2">Welcome Back!</h1>
@@ -111,8 +91,6 @@ export default function LoginPage() {
         )}
 
         <form className="space-y-5" onSubmit={handleLogin}>
-          
-          {/* Input Email */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
             <input 
@@ -125,7 +103,6 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Input Password */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
             <div className="relative">
@@ -151,11 +128,9 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Kontainer Widget hCaptcha */}
           <div className="flex justify-center py-2 overflow-hidden">
             <HCaptcha
               ref={captchaRef}
-              // 🔥 TRICK SAKTI: Auto-Switch Key. Lokal pakai dummy, Production pakai yang asli!
               sitekey={
                 isLocalhost 
                   ? "de528f20-20a4-4ee8-a2b6-a97a054c5aae" 
@@ -166,7 +141,6 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Tombol Action */}
           <div className="pt-2">
             <button 
               type="submit" 
@@ -176,7 +150,6 @@ export default function LoginPage() {
               {isLoading ? "Signing in..." : "Sign in"}
             </button>
           </div>
-
         </form>
       </div>
     </div>

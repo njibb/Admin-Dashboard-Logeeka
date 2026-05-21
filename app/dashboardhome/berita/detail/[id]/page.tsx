@@ -6,8 +6,6 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useSession, signOut } from "next-auth/react";
-
-
 import 'react-quill-new/dist/quill.snow.css';
 
 export default function DetailBeritaPage() {
@@ -32,7 +30,6 @@ export default function DetailBeritaPage() {
       setIsLoading(true);
       try {
         const token = (session as any)?.accessToken;
-        
         if (!token) return;
 
         const response = await axios.get(`/api/admin/berita/show/${id}`, {
@@ -45,14 +42,12 @@ export default function DetailBeritaPage() {
         const responsData = response.data?.data || response.data?.result || response.data;
         const dataAkurat = responsData?.berita ? responsData.berita : responsData;
 
-        console.log("ISI DETAIL BERITA:", dataAkurat);
         setBeritaDetail(dataAkurat);
 
       } catch (error) {
         console.error("Gagal mengambil detail berita:", error);
-        
         if (axios.isAxiosError(error) && error.response?.status === 401) {
-          signOut({ callbackUrl: 'login' });
+          signOut({ callbackUrl: '/login' });
         } else {
           setErrorMsg("Gagal memuat detail berita dari server.");
         }
@@ -64,26 +59,24 @@ export default function DetailBeritaPage() {
     if (id && status === "authenticated") {
       fetchDetailBerita();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [id, status, session]);
 
-  
   if (status === "loading") {
     return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
   }
 
   let imageUrl = null;
   if (beritaDetail?.single_media_object?.path_media) {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL; 
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || ""; 
     imageUrl = `${baseUrl}/${beritaDetail.single_media_object.path_media}`;
   } else {
-      imageUrl = beritaDetail?.file_url || beritaDetail?.image_url || beritaDetail?.thumbnail_url;
+    imageUrl = beritaDetail?.file_url || beritaDetail?.image_url || beritaDetail?.thumbnail_url;
   }
 
   return (
     <div className="min-h-screen p-6 sm:p-10 font-sans">
       
-      {/* ================= HEADER HALAMAN ================= */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -107,7 +100,6 @@ export default function DetailBeritaPage() {
         </div>
       )}
 
-      {/* ================= KONTEN DETAIL ================= */}
       <div className="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden p-6 sm:p-10 max-w-4xl relative">
         
         {isLoading ? (
@@ -118,7 +110,6 @@ export default function DetailBeritaPage() {
         ) : beritaDetail ? (
           <div className="space-y-8">
             
-            {/* Header Detail (Judul & Badge) */}
             <div className="border-b border-gray-100 pb-6">
               <div className="flex flex-wrap items-center gap-3 mb-4">
                 <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold tracking-wider uppercase">
@@ -134,7 +125,6 @@ export default function DetailBeritaPage() {
               </h1>
             </div>
 
-            {/* Area Gambar */}
             {imageUrl ? (
               <div className="w-full h-64 sm:h-96 rounded-2xl overflow-hidden border border-gray-100 shadow-inner bg-gray-50">
                 <img 
@@ -155,8 +145,6 @@ export default function DetailBeritaPage() {
               </div>
             )}
 
-            
-         
             <div className="text-gray-700 leading-relaxed text-lg ql-snow">
               {beritaDetail.konten_berita ? (
                  <div 

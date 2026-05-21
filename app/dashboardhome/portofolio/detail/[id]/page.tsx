@@ -41,12 +41,10 @@ export default function DetailPortofolioPage() {
           }
         };
 
-        // 🔥 UBAHAN SAKTI: Pinjam endpoint pagination + tembak lewat keyword ID proyek biar gak Error 400
         const response = await axios.get(`/api/project-profile/pagination?currentPage=1&dataPerPage=5&keywords=${id}`, config);
 
-        // Tangkap array datanya dari response pagination
         const listData = response.data?.result?.data || response.data?.data || [];
-        const dataAkurat = listData[0]; // Ambil data baris pertama hasil filter ID
+        const dataAkurat = listData[0]; 
         
         setPortofolioDetail(dataAkurat);
 
@@ -91,7 +89,6 @@ export default function DetailPortofolioPage() {
   return (
     <div className="min-h-screen p-6 sm:p-10 font-sans">
       
-      {/* ================= HEADER ================= */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -109,7 +106,6 @@ export default function DetailPortofolioPage() {
         </div>
       </div>
 
-      {/* ================= KONTEN UTAMA ================= */}
       <div className="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden p-6 sm:p-10 max-w-4xl relative">
         
         {isLoading ? (
@@ -159,7 +155,6 @@ export default function DetailPortofolioPage() {
               </div>
             )}
 
-            {/* 🔥 UBAHAN UTAMA: Render deskripsi HTML bawaan ReactQuill secara aman */}
             {(portofolioDetail.konten || portofolioDetail.deskripsi || portofolioDetail.description) && (
               <div className="prose max-w-none text-gray-900 leading-relaxed font-medium">
                 <div 
@@ -186,7 +181,7 @@ export default function DetailPortofolioPage() {
                 href="/dashboardhome/portofolio"
                 className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all shadow-md flex items-center gap-2"
               >
-                <svg xmlns="http://www.w3.org/2000/xl" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
                 Kembali ke Daftar Portofolio
               </Link>
             </div>

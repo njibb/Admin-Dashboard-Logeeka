@@ -20,12 +20,11 @@ export default function ManajemenFaqPage() {
 
   const [faqData, setFaqData] = useState<Faq[]>([]); 
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState(""); // State buat nahan API call
+  const [debouncedSearch, setDebouncedSearch] = useState(""); 
   
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   
-  // State Pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [entriesPerPage, setEntriesPerPage] = useState<number>(10);
   const [totalDataServer, setTotalDataServer] = useState<number>(0);
@@ -36,7 +35,6 @@ export default function ManajemenFaqPage() {
     }
   }, [status, router]);
 
-  // Efek Debounce: Nunggu user berenti ngetik 500ms, baru update debouncedSearch
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
@@ -44,7 +42,6 @@ export default function ManajemenFaqPage() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Reset ke halaman 1 kalau kata pencarian atau jumlah entri berubah
   useEffect(() => {
     setCurrentPage(1);
   }, [debouncedSearch, entriesPerPage]);
@@ -58,7 +55,6 @@ export default function ManajemenFaqPage() {
       const token = (session as any)?.accessToken;
       if (!token) return;
 
-      // URL API SEKARANG DINAMIS MENGIKUTI STATE (Server-Side)
       const response = await axios.get(
         `/api/admin/faq/pagination?currentPage=${currentPage}&dataPerPage=${entriesPerPage}&sort=desc&keywords=${debouncedSearch}`, 
         {
@@ -69,7 +65,6 @@ export default function ManajemenFaqPage() {
         }
       );
 
-      // Sesuaikan pembacaan data dengan response API (Menggunakan .count)
       if (response.data && response.data.result && response.data.result.data) {
         setFaqData(response.data.result.data);
         setTotalDataServer(response.data.result.count || response.data.result.data.length); 
@@ -142,7 +137,6 @@ export default function ManajemenFaqPage() {
     }
   };
 
-  // Panggil fetchFaq setiap kali currentPage, entriesPerPage, atau debouncedSearch berubah
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tokenSiap = (session as any)?.accessToken;
@@ -153,7 +147,6 @@ export default function ManajemenFaqPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, session, currentPage, entriesPerPage, debouncedSearch]);
 
-  // HAPUS filter client-side, sekarang kita pakai data murni dari API
   const displayedFaq = faqData;
 
   if (status === "loading") {
@@ -169,7 +162,6 @@ export default function ManajemenFaqPage() {
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         
-        {/* 🔥 UBAHAN: Badge Total Data Ditambahkan Di Sini */}
         <div className="flex items-center gap-4">
           <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">FAQ</h2>
           {!isLoading && (
@@ -264,7 +256,6 @@ export default function ManajemenFaqPage() {
                 displayedFaq.map((item: Faq, index: number) => (
                   <tr key={item.id} className="hover:bg-red-50/40 transition-colors group">
                     <td className="py-4 px-6 border-b border-gray-100 text-sm font-semibold text-gray-900 text-center">
-                      {/* Kalkulasi nomor urut agar nyambung per halaman */}
                       {(currentPage - 1) * entriesPerPage + index + 1}
                     </td>
                     <td className="py-4 px-6 border-b border-gray-100 text-sm font-semibold text-gray-900 max-w-[250px] truncate">
@@ -287,7 +278,6 @@ export default function ManajemenFaqPage() {
           </table>
         </div>
 
-        {/* TOMBOL PAGINATION SERVER-SIDE */}
         <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50">
           <span className="text-sm text-gray-600 font-medium">
             Halaman {currentPage}

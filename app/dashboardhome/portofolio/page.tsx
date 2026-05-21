@@ -20,12 +20,11 @@ export default function ManajemenPortofolioPage() {
 
   const [portofolioData, setPortofolioData] = useState<Portofolio[]>([]); 
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState(""); // State nahan API call
+  const [debouncedSearch, setDebouncedSearch] = useState(""); 
   
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   
-  // State Pagination Server-Side
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [entriesPerPage, setEntriesPerPage] = useState<number>(10);
   const [totalDataServer, setTotalDataServer] = useState<number>(0);
@@ -36,7 +35,6 @@ export default function ManajemenPortofolioPage() {
     }
   }, [status, router]);
 
-  // Efek Debounce: Nunggu user berenti ngetik 500ms
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
@@ -44,7 +42,6 @@ export default function ManajemenPortofolioPage() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Reset ke halaman 1 kalau kata pencarian atau jumlah entri berubah
   useEffect(() => {
     setCurrentPage(1);
   }, [debouncedSearch, entriesPerPage]);
@@ -58,7 +55,6 @@ export default function ManajemenPortofolioPage() {
       const token = (session as any)?.accessToken;
       if (!token) return;
 
-      // 🔥 UBAHAN: Endpoint API sekarang dinamis (Server-Side)
       const response = await axios.get(
         `/api/project-profile/pagination?currentPage=${currentPage}&dataPerPage=${entriesPerPage}&sort=desc&keywords=${debouncedSearch}`, 
         {
@@ -141,7 +137,6 @@ export default function ManajemenPortofolioPage() {
     }
   };
 
-  // 🔥 UBAHAN: Panggil fetch tiap state berubah
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tokenSiap = (session as any)?.accessToken;
@@ -152,7 +147,6 @@ export default function ManajemenPortofolioPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, session, currentPage, entriesPerPage, debouncedSearch]);
 
-  // Hapus filter manual, pakai data asli dari API
   const displayedPortofolio = portofolioData;
 
   if (status === "loading") {
@@ -306,7 +300,6 @@ export default function ManajemenPortofolioPage() {
           </table>
         </div>
 
-        {/* 🔥 UBAHAN: Tombol Pagination Server-Side */}
         <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50">
           <span className="text-sm text-gray-600 font-medium">
             Halaman {currentPage}
