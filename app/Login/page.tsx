@@ -87,12 +87,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen relative flex items-center justify-center bg-[#fff5f5] overflow-hidden font-sans p-4">
       
-      {/* Tombol Back */}
-      <Link href="/" className="absolute top-8 left-8 text-red-800/60 hover:text-red-600 font-medium flex items-center gap-2 transition-colors z-20">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
-        Home page
-      </Link>
-
       {/* BACKGROUND MESH */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-red-300 rounded-full mix-blend-multiply filter blur-[120px] opacity-70"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-rose-400 rounded-full mix-blend-multiply filter blur-[150px] opacity-60"></div>
