@@ -88,7 +88,7 @@ export default function EditPortofolioPage() {
         if (axios.isAxiosError(error) && error.response?.status === 401) {
             signOut({ callbackUrl: '/login' });
         } else {
-           console.log("Data lama gagal dimuat. Form akan kosong.");
+           setErrorMsg("Data lama gagal dimuat dari server.");
         }
       } finally {
         setIsLoading(false);
@@ -96,7 +96,7 @@ export default function EditPortofolioPage() {
     };
 
     if (id && status === "authenticated") fetchDataLama();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [id, status, session]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,6 +139,8 @@ export default function EditPortofolioPage() {
         {
           headers: {
             'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'multipart/form-data'
           }
         }
       );
@@ -157,10 +159,15 @@ export default function EditPortofolioPage() {
 
     } catch (error) {
       console.error("Gagal update portofolio:", error);
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-         signOut({ callbackUrl: '/login' });
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          signOut({ callbackUrl: '/login' });
+        } else {
+          const pesanServer = error.response?.data?.message || error.response?.data?.error || "Gagal menyimpan perubahan ke server.";
+          setErrorMsg(`Ditolak Server (400): ${pesanServer}`);
+        }
       } else {
-          setErrorMsg("Gagal menyimpan perubahan ke server. Cek koneksi atau URL API.");
+        setErrorMsg("Terjadi kesalahan jaringan atau sistem.");
       }
     } finally {
       setIsSaving(false);
