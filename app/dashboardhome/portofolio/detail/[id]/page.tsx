@@ -10,7 +10,7 @@ import { useSession, signOut } from "next-auth/react";
 export default function DetailPortofolioPage() {
   const params = useParams(); 
   const router = useRouter();
-  const { id } = params; 
+  const id = params?.id; 
 
   const { data: session, status } = useSession();
 
@@ -41,7 +41,8 @@ export default function DetailPortofolioPage() {
           }
         };
 
-        const response = await axios.get(`/api/project-profile/pagination?currentPage=1&dataPerPage=5&keywords=${id}`, config);
+        // Menggunakan /api-proxy/ untuk menghindari CORS
+        const response = await axios.get(`/api-proxy/api/project-profile/pagination?currentPage=1&dataPerPage=5&keywords=${id}`, config);
 
         const listData = response.data?.result?.data || response.data?.data || [];
         const dataAkurat = listData[0]; 
@@ -79,7 +80,7 @@ export default function DetailPortofolioPage() {
     };
 
     if (id && status === "authenticated") fetchDetailPortofolio();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [id, status, session]);
 
   if (status === "loading") {

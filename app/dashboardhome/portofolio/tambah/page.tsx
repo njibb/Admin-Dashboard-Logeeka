@@ -87,7 +87,7 @@ export default function TambahPortofolioPage() {
       }
 
       const response = await axios.post(
-        "/api/admin/project-profile/store", 
+        "/api-proxy/api/admin/project-profile/store", 
         formData,
         {
           headers: {
@@ -117,7 +117,10 @@ export default function TambahPortofolioPage() {
 
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
+        // PENGECEKAN KHUSUS UNTUK ERROR 413 (FILE KEGEDEAN)
+        if (error.response?.status === 413) {
+          setErrorMsg("Gagal menyimpan: Ukuran gambar terlalu besar! Harap kompres gambar di bawah 1MB - 2MB.");
+        } else if (error.response?.status === 401) {
           signOut({ callbackUrl: '/login' });
         } else {
           setErrorMsg(error.response?.data?.message || "Gagal menyimpan data ke server.");

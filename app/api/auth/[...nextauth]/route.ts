@@ -12,7 +12,7 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://logeeka-magang.mokumuka.com';
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-cms.logeeka.id';
           
           const res = await axios.post(`${baseUrl}/api/auth/login`, {
             params: {
@@ -21,6 +21,10 @@ const handler = NextAuth({
             }
           });
 
+          
+          console.log("CEK RESPONSE LOGIN:", res.data);
+
+          
           const token = res.data?.data?.token;
 
           if (token) {
@@ -54,10 +58,11 @@ const handler = NextAuth({
     }
   },
   pages: {
-    signIn: '/dashboardhome', 
+    signIn: '/login', 
   },
   session: {
     strategy: "jwt",
+    maxAge: 24 * 60 * 60, 
   },
   secret: process.env.NEXTAUTH_SECRET || "logeeka-rahasia-super-aman-123",
 });

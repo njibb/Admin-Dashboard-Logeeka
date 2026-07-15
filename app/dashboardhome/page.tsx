@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, JSX } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -10,14 +10,14 @@ import {
   PieChart, Pie, Cell} from 'recharts';
 import Swal from 'sweetalert2';
 
-const ScrambleNumber = ({ value }: { value: string | number }): import("react/jsx-runtime").JSX.Element => {
+const ScrambleNumber = ({ value }: { value: string | number }): JSX.Element => {
   const [display, setDisplay] = useState<string | number>("...");
 
   useEffect((): (() => void) | undefined => {
     if (value === "...") return;
     const duration = 800; 
     const interval = 40; 
-    let elapsed = 0;     
+    let elapsed = 0; 
   
     const timer = setInterval((): void => {
       elapsed += interval;
@@ -65,7 +65,7 @@ export default function DashboardHomePage() {
     }
   }, [status, router]);
 
- const fetchDashboardData = async () => {
+  const fetchDashboardData = async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const token = (session as any)?.accessToken;
     if (!token) return;
@@ -74,10 +74,13 @@ export default function DashboardHomePage() {
       headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
     };
 
+    // MENGGUNAKAN ENV VARIABLE (AMAN UNTUK GITHUB)
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+
     try {
-      const urlBerita = "/api/admin/berita/pagination?sortBy=waktu_posting&sort=desc&currentPage=1&dataPerPage=100&keywords=";
-      const urlPorto = "/api/project-profile/pagination?sort=desc&currentPage=1&dataPerPage=100&keywords=";
-      const urlFaq = "/api/admin/faq/pagination?currentPage=1&dataPerPage=100&keywords=";
+      const urlBerita = `${baseUrl}/api/admin/berita/pagination?sortBy=judul_berita&sort=asc&currentPage=1&dataPerPage=10`;
+      const urlPorto = `${baseUrl}/api/admin/project-profile/pagination?sort=asc&currentPage=1&dataPerPage=10`;
+      const urlFaq = `${baseUrl}/api/admin/faq/pagination?sortBy=judul&sort=asc&currentPage=1&dataPerPage=10&keywords=`;
       
       const [beritaRes, portofolioRes, faqRes] = await Promise.all([
         axios.get(urlBerita, config),
@@ -106,7 +109,7 @@ export default function DashboardHomePage() {
           Swal.fire({
             icon: 'error',
             title: 'API Error!',
-            text: `Gagal tarik data. Status: ${error.response?.status} - ${error.message}`
+            text: `Gagal tarik data. Status: ${error.response?.status}`
           });
         }
       }
@@ -313,7 +316,7 @@ export default function DashboardHomePage() {
 
         </div>
 
-        {/* ================= AREA GRAFIK RECHARTS (Grid 3 Kolom Kembali) ================= */}
+        {/* ================= AREA GRAFIK RECHARTS (Grid 3 Kolom) ================= */}
         <motion.div 
           initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }}
           className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-8"
@@ -440,7 +443,7 @@ export default function DashboardHomePage() {
                       data={categoryData.chartData} cx="50%" cy="50%" innerRadius="65%" outerRadius="90%"
                       paddingAngle={5} dataKey="value" stroke="none"
                     >
-                      {categoryData.chartData.map((entry, index): import("react/jsx-runtime").JSX.Element => (
+                      {categoryData.chartData.map((entry, index): JSX.Element => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -463,7 +466,7 @@ export default function DashboardHomePage() {
             
             {categoryData.chartData.length > 0 && (
               <div className="mt-4 flex flex-wrap justify-center gap-2">
-                 {categoryData.chartData.map((entry, index): import("react/jsx-runtime").JSX.Element => (
+                 {categoryData.chartData.map((entry, index): JSX.Element => (
                    <div key={index} className="flex items-center gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
                       <span className="text-[11px] font-semibold text-gray-600">{entry.name}</span>

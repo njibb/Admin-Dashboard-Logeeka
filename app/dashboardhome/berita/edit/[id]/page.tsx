@@ -34,7 +34,7 @@ const formats = [
 export default function EditBeritaPage() {
   const params = useParams();
   const router = useRouter();
-  const { id } = params;
+  const id = params?.id;
 
   const { data: session, status } = useSession();
 
@@ -57,34 +57,27 @@ export default function EditBeritaPage() {
 
   useEffect(() => {
     const fetchDetailBerita = async () => {
+      if (!id) return;
+      setIsLoading(true);
       try {
         const token = (session as any)?.accessToken;
         if (!token) return;
 
-        const response = await axios.get(`/api/admin/berita/show/${id}`, {
+        const response = await axios.get(`/api-proxy/api/admin/berita/show/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
           }
         });
 
-        const responsData = response.data?.data || response.data?.result || response.data;
-        const dataAkurat = responsData?.berita ? responsData.berita : responsData;
+        const dataAkurat = response.data?.data?.berita;
         
         if (dataAkurat) {
           setJudulBerita(dataAkurat.judul_berita || "");
           setKontenBerita(dataAkurat.konten_berita || "");
           
-          let imageUrl = null;
-          if (dataAkurat?.single_media_object?.path_media) {
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-            imageUrl = `${baseUrl}/${dataAkurat.single_media_object.path_media}`;
-          } else {
-             imageUrl = dataAkurat?.file_url || dataAkurat?.image_url || dataAkurat?.thumbnail_url;
-          }
-
-          if (imageUrl) {
-            setImagePreview(imageUrl); 
+          if (dataAkurat.media_url) {
+            setImagePreview(dataAkurat.media_url); 
           }
         }
       } catch (error) {
@@ -137,7 +130,7 @@ export default function EditBeritaPage() {
       }
 
       await axios.post(
-        `/api/admin/berita/update/${id}`, 
+        `/api-proxy/api/admin/berita/update/${id}`, 
         formData,
         {
           headers: {

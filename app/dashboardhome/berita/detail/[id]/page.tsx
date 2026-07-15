@@ -11,7 +11,7 @@ import 'react-quill-new/dist/quill.snow.css';
 export default function DetailBeritaPage() {
   const params = useParams(); 
   const router = useRouter();
-  const { id } = params; 
+  const id = params?.id; 
 
   const { data: session, status } = useSession();
 
@@ -27,26 +27,26 @@ export default function DetailBeritaPage() {
 
   useEffect(() => {
     const fetchDetailBerita = async () => {
+      if (!id) return;
       setIsLoading(true);
       try {
         const token = (session as any)?.accessToken;
         if (!token) return;
 
-        const response = await axios.get(`/api/admin/berita/show/${id}`, {
+        // SEKARANG NEMBAK KE /api-proxy/ (CORS Aman!)
+        const response = await axios.get(`/api-proxy/api/admin/berita/show/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
           }
         });
 
-        const responsData = response.data?.data || response.data?.result || response.data;
-        const dataAkurat = responsData?.berita ? responsData.berita : responsData;
+        const responsData = response.data?.data?.berita; 
+        setBeritaDetail(responsData);
 
-        setBeritaDetail(dataAkurat);
-
-      } catch (error) {
+      } catch (error: any) {
         console.error("Gagal mengambil detail berita:", error);
-        if (axios.isAxiosError(error) && error.response?.status === 401) {
+        if (error.response?.status === 401) {
           signOut({ callbackUrl: '/login' });
         } else {
           setErrorMsg("Gagal memuat detail berita dari server.");
@@ -59,24 +59,16 @@ export default function DetailBeritaPage() {
     if (id && status === "authenticated") {
       fetchDetailBerita();
     }
-
   }, [id, status, session]);
 
   if (status === "loading") {
     return <div className="min-h-screen p-6 sm:p-10 font-sans bg-gray-50 flex items-center justify-center">Loading...</div>;
   }
 
-  let imageUrl = null;
-  if (beritaDetail?.single_media_object?.path_media) {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || ""; 
-    imageUrl = `${baseUrl}/${beritaDetail.single_media_object.path_media}`;
-  } else {
-    imageUrl = beritaDetail?.file_url || beritaDetail?.image_url || beritaDetail?.thumbnail_url;
-  }
+  const imageUrl = beritaDetail?.media_url;
 
   return (
     <div className="min-h-screen p-6 sm:p-10 font-sans">
-      
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -90,7 +82,6 @@ export default function DetailBeritaPage() {
             </Link>
             <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Detail Berita</h2>
           </div>
-          <p className="text-gray-500 ml-12">Melihat informasi lengkap dari berita yang dipilih.</p>
         </div>
       </div>
 
@@ -101,7 +92,6 @@ export default function DetailBeritaPage() {
       )}
 
       <div className="bg-white rounded-[1.5rem] border border-gray-200 shadow-sm overflow-hidden p-6 sm:p-10 max-w-4xl relative">
-        
         {isLoading ? (
           <div className="py-20 flex flex-col items-center justify-center">
              <div className="inline-block animate-spin w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full mb-4"></div>
@@ -109,17 +99,7 @@ export default function DetailBeritaPage() {
           </div>
         ) : beritaDetail ? (
           <div className="space-y-8">
-            
             <div className="border-b border-gray-100 pb-6">
-              <div className="flex flex-wrap items-center gap-3 mb-4">
-                <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold tracking-wider uppercase">
-                  {beritaDetail.asal_data || "MANUAL"}
-                </span>
-                <span className="text-sm text-gray-500 font-medium flex items-center gap-1.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  {beritaDetail.waktu_posting || "Waktu tidak diketahui"}
-                </span>
-              </div>
               <h1 className="text-3xl sm:text-4xl font-black text-gray-900 leading-tight">
                 {beritaDetail.judul_berita}
               </h1>
@@ -127,42 +107,20 @@ export default function DetailBeritaPage() {
 
             {imageUrl ? (
               <div className="w-full h-64 sm:h-96 rounded-2xl overflow-hidden border border-gray-100 shadow-inner bg-gray-50">
-                <img 
-                  src={imageUrl} 
-                  alt={beritaDetail.judul_berita} 
-                  className="w-full h-full object-cover"
-                />
+                <img src={imageUrl} alt={beritaDetail.judul_berita} className="w-full h-full object-cover" />
               </div>
-            ) : (
-              <div className="w-full h-64 sm:h-96 rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center p-6 text-center shadow-sm">
-                <div className="flex flex-col items-center gap-4 text-gray-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                  </svg>
-                  <p className="text-xl font-bold text-gray-700">Tidak ada gambar</p>
-                  <p className="text-sm">Gambar tidak tersedia atau URL tidak valid.</p>
-                </div>
-              </div>
-            )}
+            ) : null}
 
             <div className="text-gray-700 leading-relaxed text-lg ql-snow">
-              {beritaDetail.konten_berita ? (
-                 <div 
-                   className="ql-editor p-0 [&_p]:!mb-4 [&_h1]:!mb-4 [&_h2]:!mb-4 [&_h3]:!mb-4 [&_ul]:!mb-4 [&_ol]:!mb-4 [&_li]:!mb-1" 
-                   dangerouslySetInnerHTML={{ __html: beritaDetail.konten_berita }} 
-                 />
-              ) : (
-                 <p className="italic text-gray-400">Konten berita kosong.</p>
-              )}
+              <div 
+                className="ql-editor p-0" 
+                dangerouslySetInnerHTML={{ __html: beritaDetail.konten_berita }} 
+              />
             </div>
-
           </div>
         ) : (
-          <div className="py-20 text-center text-gray-500 font-medium">
-            Data detail tidak ditemukan.
-          </div>
+          <div className="py-20 text-center text-gray-500 font-medium">Data detail tidak ditemukan.</div>
         )}
-
       </div>
     </div>
   );

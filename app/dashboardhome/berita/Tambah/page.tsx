@@ -83,8 +83,9 @@ export default function TambahBeritaPage() {
         formData.append("single_file_upload", fileUpload);
       }
 
+      
       await axios.post(
-        "/api/admin/berita/store", 
+        "/api-proxy/api/admin/berita/store", 
         formData,
         {
           headers: {

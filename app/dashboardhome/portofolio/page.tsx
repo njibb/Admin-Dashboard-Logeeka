@@ -9,9 +9,11 @@ import { useSession, signOut } from "next-auth/react";
 
 interface Portofolio {
   id: string;
-  judul_portofolio: string; 
-  kategori: string;        
-  waktu_posting: string;   
+  title?: string;
+  judul_portofolio?: string; 
+  category_code?: string;
+  kategori?: string;        
+  waktu_posting?: string;   
 }
 
 export default function ManajemenPortofolioPage() {
@@ -56,7 +58,7 @@ export default function ManajemenPortofolioPage() {
       if (!token) return;
 
       const response = await axios.get(
-        `/api/project-profile/pagination?currentPage=${currentPage}&dataPerPage=${entriesPerPage}&sort=desc&keywords=${debouncedSearch}`, 
+        `/api-proxy/api/admin/project-profile/pagination?currentPage=${currentPage}&dataPerPage=${entriesPerPage}&sort=desc&keywords=${debouncedSearch}`, 
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -107,7 +109,7 @@ export default function ManajemenPortofolioPage() {
       const token = (session as any)?.accessToken;
       if (!token) return;
 
-      await axios.delete(`/api/admin/project-profile/delete/${id}`, {
+      await axios.delete(`/api-proxy/api/admin/project-profile/delete/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
@@ -199,7 +201,7 @@ export default function ManajemenPortofolioPage() {
               aria-label="Tampilkan entri" 
               value={entriesPerPage}
               onChange={(e) => setEntriesPerPage(Number(e.target.value))}
-              className="border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-red-500 bg-white outline-none"
+              className="border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-red-500 bg-white outline-none cursor-pointer"
             >
               <option value={10}>10</option>
               <option value={25}>25</option>
@@ -212,7 +214,7 @@ export default function ManajemenPortofolioPage() {
           <div className="relative w-full sm:w-64">
             <input 
               type="text" 
-              placeholder="Cari data Porotofolio" 
+              placeholder="Cari data Portofolio" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-red-500 bg-gray-50 focus:bg-white transition-all outline-none"
@@ -255,7 +257,7 @@ export default function ManajemenPortofolioPage() {
                       <h3 className="text-xl font-black text-gray-900 mb-2">Yah, datanya masih kosong nih! 📦</h3>
                       <p className="text-gray-500 max-w-md mb-8 font-medium">Sepertinya belum ada project atau portofolio yang ditambahkan. Yuk, mulai isi tabel ini dengan karya terbaikmu!</p>
                       <Link 
-                        href="/dashboardhome/portofolio/tambah"
+                        href="/dashboardhome/portofolio/Tambah"
                         className="px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl transition-all shadow-md flex items-center gap-2"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
@@ -269,15 +271,14 @@ export default function ManajemenPortofolioPage() {
                 displayedPortofolio.map((item: any, index: number) => (
                   <tr key={item.id} className="hover:bg-red-50/40 transition-colors group">
                     <td className="py-4 px-6 border-b border-gray-100 text-sm font-semibold text-gray-900 text-center">
-                      {/* Penomoran dinamis sesuai urutan halaman */}
                       {(currentPage - 1) * entriesPerPage + index + 1}
                     </td>
                     <td className="py-4 px-6 border-b border-gray-100 text-sm font-semibold text-gray-900 max-w-[300px] truncate">
-                      {item.title || "Judul Tidak Diketahui"}
+                      {item.title || item.judul_portofolio || "Judul Tidak Diketahui"}
                     </td>
                     <td className="py-4 px-6 border-b border-gray-100 text-sm text-gray-600">
                       <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-semibold uppercase">
-                        {item.category_code ? item.category_code.replace('_', ' ') : "UMUM"}
+                        {item.category_code ? item.category_code.replace('_', ' ') : item.kategori ? item.kategori.replace('_', ' ') : "UMUM"}
                       </span>
                     </td>
                     <td className="py-4 px-6 border-b border-gray-100 text-sm text-center">

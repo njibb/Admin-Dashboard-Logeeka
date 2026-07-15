@@ -1,15 +1,13 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   async rewrites() {
     return [
       {
-        // 🔥 INI KUNCINYA: (?!auth).* artinya "bajak semua KECUALI kata auth"
-        source: '/api/:path((?!auth).*)',
-        destination: 'https://logeeka-magang.mokumuka.com/api/:path*',
+        source: '/api-proxy/:path*',
+        destination: 'https://api-cms.logeeka.id/:path*',
       },
     ];
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

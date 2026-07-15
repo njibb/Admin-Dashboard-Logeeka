@@ -57,7 +57,7 @@ export default function ManajemenBeritaPage() {
       if (!token) return;
 
       const response = await axios.get(
-        `/api/admin/berita/pagination?sortBy=waktu_posting&sort=desc&currentPage=${currentPage}&dataPerPage=${entriesPerPage}&keywords=${debouncedSearch}`, 
+        `/api-proxy/api/admin/berita/pagination?sortBy=waktu_posting&sort=desc&currentPage=${currentPage}&dataPerPage=${entriesPerPage}&keywords=${debouncedSearch}`, 
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -108,7 +108,7 @@ export default function ManajemenBeritaPage() {
       const token = (session as any)?.accessToken;
       if (!token) return;
 
-      await axios.delete(`/api/admin/berita/delete/${id}`, {
+      await axios.delete(`/api-proxy/api/admin/berita/delete/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'

@@ -56,7 +56,7 @@ export default function ManajemenFaqPage() {
       if (!token) return;
 
       const response = await axios.get(
-        `/api/admin/faq/pagination?currentPage=${currentPage}&dataPerPage=${entriesPerPage}&sort=desc&keywords=${debouncedSearch}`, 
+        `/api-proxy/api/admin/faq/pagination?currentPage=${currentPage}&dataPerPage=${entriesPerPage}&sort=desc&keywords=${debouncedSearch}`, 
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -107,7 +107,7 @@ export default function ManajemenFaqPage() {
       const token = (session as any)?.accessToken;
       if (!token) return;
 
-      await axios.delete(`/api/admin/faq/delete/${id}`, {
+      await axios.delete(`/api-proxy/api/admin/faq/delete/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
