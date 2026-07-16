@@ -1,0 +1,12 @@
+# URL Utama API Backend
+NEXT_PUBLIC_API_URL=xxxxx
+# Nama Aplikasi 
+NEXT_PUBLIC_APP_NAME="Logeeka Admin Dashboard"
+
+# Versi API 
+NEXT_PUBLIC_API_VERSION=v1
+
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=xxxxxx
+NEXT_PUBLIC_HCAPTCHA_SITE_KEY=xxxxxx
+HCAPTCHA_SECRET_KEY=xxxxxxx
