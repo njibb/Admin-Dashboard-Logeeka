@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @next/next/no-img-element */
+
 "use client";
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -40,14 +40,13 @@ export default function EditFaqPage() {
 
   const [judul, setJudul] = useState("");
   const [konten, setKonten] = useState("");
-  const [fileUpload, setFileUpload] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null); 
+  const [fileUpload] = useState<File | null>(null);
+  const [, setImagePreview] = useState<string | null>(null); 
 
   const [isLoading, setIsLoading] = useState(true); 
   const [isSaving, setIsSaving] = useState(false);  
   const [errorMsg, setErrorMsg] = useState("");
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -99,13 +98,6 @@ export default function EditFaqPage() {
 
   }, [id, status, session]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFileUpload(file);
-      setImagePreview(URL.createObjectURL(file)); 
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

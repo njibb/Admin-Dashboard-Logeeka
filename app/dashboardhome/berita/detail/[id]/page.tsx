@@ -33,7 +33,7 @@ export default function DetailBeritaPage() {
         const token = (session as any)?.accessToken;
         if (!token) return;
 
-        // SEKARANG NEMBAK KE /api-proxy/ (CORS Aman!)
+        
         const response = await axios.get(`/api-proxy/api/admin/berita/show/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,

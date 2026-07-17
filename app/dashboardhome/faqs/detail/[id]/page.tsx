@@ -133,11 +133,10 @@ export default function DetailFaqPage() {
         [&_li]:!mb-2 
         [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:!mb-5 
         [&_h2]:text-xl [&_h2]:font-bold [&_h2]:!mb-5" 
-        
-        /* JURUS PAMUNGKAS 1: Inline Style mutlak untuk mematikan sifat "pre-wrap" Quill */
+
         style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}
         
-        /* JURUS PAMUNGKAS 2: Sapu bersih semua jenis enter (\r dan \n) diubah jadi spasi */
+       
        dangerouslySetInnerHTML={{ __html: faqDetail.konten.replace(/[\r\n]+/g, ' ').replace(/&nbsp;/g, ' ') }} 
       />
     ) : (
