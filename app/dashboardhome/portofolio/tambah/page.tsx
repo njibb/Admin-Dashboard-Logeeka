@@ -6,29 +6,13 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useSession, signOut } from "next-auth/react";
-import dynamic from 'next/dynamic';
+
 import 'react-quill-new/dist/quill.snow.css'; 
 
-const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
-const modules = {
-  toolbar: [
-    [{ 'header': [1, 2, 3, false] }],
-    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-    ['link', 'clean']
-  ],
-  clipboard: {
-    matchVisual: false, 
-  }
-};
 
-const formats = [
-  'header',
-  'bold', 'italic', 'underline', 'strike', 'blockquote',
-  'list', 
-  'link'
-];
+
+
 
 export default function TambahPortofolioPage() {
   const router = useRouter();
@@ -37,7 +21,6 @@ export default function TambahPortofolioPage() {
   const [title, setTitle] = useState("");
   const [projectUrl, setProjectUrl] = useState("");
   const [categoryCode, setCategoryCode] = useState("marketing_communication"); 
-  const [description, setDescription] = useState(""); 
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
@@ -63,10 +46,7 @@ export default function TambahPortofolioPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!description || description === '<p><br></p>') {
-      Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Deskripsi detail project tidak boleh kosong!' });
-      return;
-    }
+   
 
     setIsLoading(true);
     setErrorMsg("");
@@ -80,7 +60,7 @@ export default function TambahPortofolioPage() {
       formData.append("title", title);
       formData.append("project_url", projectUrl);
       formData.append("category_code", categoryCode);
-      formData.append("description", description); 
+     
       
       if (fileUpload) {
         formData.append("single_thumbnail_upload", fileUpload); 
@@ -206,20 +186,7 @@ export default function TambahPortofolioPage() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Deskripsi / Detail Project <span className="text-red-500">*</span></label>
-            <div className="text-gray-900 bg-white rounded-xl overflow-hidden border border-gray-300">
-              <ReactQuill 
-                theme="snow" 
-                placeholder="Ketik detail pencapaian, tech stack, atau deskripsi lengkap project di sini..."
-                value={description} 
-                onChange={setDescription} 
-                modules={modules}
-                formats={formats}
-                className="h-64 mb-12" 
-              />
-            </div>
-          </div>
+          
 
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Upload Thumbnail Project <span className="text-red-500">*</span></label>

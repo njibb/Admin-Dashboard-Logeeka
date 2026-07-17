@@ -111,11 +111,22 @@ export default function DetailBeritaPage() {
               </div>
             ) : null}
 
-            <div className="text-gray-700 leading-relaxed text-lg ql-snow">
-              <div 
-                className="ql-editor p-0" 
-                dangerouslySetInnerHTML={{ __html: beritaDetail.konten_berita }} 
-              />
+            <div className="text-gray-700 leading-relaxed text-lg">
+              {beritaDetail.konten_berita ? (
+                <div 
+                  className="ql-editor p-0 
+                  [&_p]:!mb-5 
+                  [&_ul]:pl-8 [&_ul]:!mb-5 [&_ul>li]:!list-disc
+                  [&_ol]:pl-8 [&_ol]:!mb-5 [&_ol>li]:!list-decimal
+                  [&_li]:!mb-2 
+                  [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:!mb-5 
+                  [&_h2]:text-xl [&_h2]:font-bold [&_h2]:!mb-5" 
+                  style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}
+                  dangerouslySetInnerHTML={{ __html: beritaDetail.konten_berita.replace(/[\r\n]+/g, ' ').replace(/&nbsp;/g, ' ') }} 
+                />
+              ) : (
+                <p className="italic text-gray-400">Konten berita kosong.</p>
+              )}
             </div>
           </div>
         ) : (

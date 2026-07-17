@@ -61,7 +61,7 @@ export default function EditFaqPage() {
         const token = (session as any)?.accessToken;
         if (!token) return;
 
-        const response = await axios.get(`/api/admin/faq/show/${id}`, {
+        const response = await axios.get(`/api-proxy/api/admin/faq/show/${id}`, {
           headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
         });
 
@@ -96,7 +96,7 @@ export default function EditFaqPage() {
     };
 
     if (id && status === "authenticated") fetchDetailFaq();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [id, status, session]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,7 +132,7 @@ export default function EditFaqPage() {
       }
 
       await axios.post(
-        `/api/admin/faq/update/${id}`, 
+        `/api-proxy/api/admin/faq/update/${id}`, 
         formData,
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
@@ -186,21 +186,7 @@ export default function EditFaqPage() {
               <input type="text" required value={judul} onChange={(e) => setJudul(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-xl text-black text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 focus:bg-white transition-all outline-none" />
             </div>
 
-            <div>
-              <label className="block text-sm font-black text-black mb-2">Upload Gambar Baru (Opsional)</label>
-              <p className="text-xs text-black font-medium mb-3">Biarkan kosong jika tidak ingin mengubah gambar.</p>
-              {imagePreview && (
-                <div className="mb-4 relative w-full sm:w-64 h-40 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                  {fileUpload && (
-                    <button type="button" onClick={() => { setFileUpload(null); setImagePreview(null); if(fileInputRef.current) fileInputRef.current.value=''; }} className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-lg hover:bg-red-700 shadow-md">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                  )}
-                </div>
-              )}
-              <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="w-full px-4 py-3 border border-gray-300 rounded-xl text-black text-sm font-medium file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-black file:bg-blue-50 file:text-blue-600 cursor-pointer hover:file:bg-blue-100" />
-            </div>
+         
 
             <div>
               <label className="block text-sm font-black text-black mb-2">Jawaban (Konten) <span className="text-red-600">*</span></label>

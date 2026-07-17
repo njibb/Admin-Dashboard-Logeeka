@@ -146,10 +146,7 @@ export default function EditPortofolioPage() {
                 <option value="branding_design">Branding & Design</option>
               </select>
             </div>
-            <div>
-              <label className="block mb-2 font-bold text-black">Deskripsi</label>
-              <ReactQuill theme="snow" value={description} onChange={setDescription} className="h-40 mb-12 text-black" />
-            </div>
+           
             <div>
               <label className="block mb-2 font-bold text-black">Ganti Thumbnail</label>
               {/* Preview Gambar */}

@@ -32,7 +32,7 @@ export default function DetailFaqPage() {
         const token = (session as any)?.accessToken;
         if (!token) return;
 
-        const response = await axios.get(`/api/admin/faq/show/${id}`, {
+        const response = await axios.get(`/api-proxy/api/admin/faq/show/${id}`, {
           headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
         });
 
@@ -52,7 +52,7 @@ export default function DetailFaqPage() {
     };
 
     if (id && status === "authenticated") fetchDetailFaq();
-   
+    
   }, [id, status, session]);
 
   if (status === "loading") {
@@ -121,19 +121,30 @@ export default function DetailFaqPage() {
               </div>
             )}
 
-            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-               <h3 className="text-sm font-bold text-gray-500 mb-4 uppercase tracking-widest">Jawaban</h3>
-               <div className="text-gray-800 leading-relaxed text-lg ql-snow">
-                 {faqDetail.konten ? (
-                    <div 
-                      className="ql-editor p-0 [&_p]:!mb-4 [&_h1]:!mb-4 [&_h2]:!mb-4 [&_h3]:!mb-4 [&_ul]:!mb-4 [&_ol]:!mb-4 [&_li]:!mb-1" 
-                      dangerouslySetInnerHTML={{ __html: faqDetail.konten }} 
-                    />
-                 ) : (
-                    <p className="italic text-gray-400">Jawaban FAQ kosong.</p>
-                 )}
-               </div>
-            </div>
+           <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+  <h3 className="text-sm font-bold text-gray-500 mb-4 uppercase tracking-widest">Jawaban</h3>
+  <div className="text-gray-800 leading-relaxed text-lg">
+    {faqDetail.konten ? (
+      <div 
+        className="ql-editor p-0 
+        [&_p]:!mb-5 
+        [&_ul]:pl-8 [&_ul]:!mb-5 [&_ul>li]:!list-disc
+        [&_ol]:pl-8 [&_ol]:!mb-5 [&_ol>li]:!list-decimal
+        [&_li]:!mb-2 
+        [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:!mb-5 
+        [&_h2]:text-xl [&_h2]:font-bold [&_h2]:!mb-5" 
+        
+        /* JURUS PAMUNGKAS 1: Inline Style mutlak untuk mematikan sifat "pre-wrap" Quill */
+        style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}
+        
+        /* JURUS PAMUNGKAS 2: Sapu bersih semua jenis enter (\r dan \n) diubah jadi spasi */
+       dangerouslySetInnerHTML={{ __html: faqDetail.konten.replace(/[\r\n]+/g, ' ').replace(/&nbsp;/g, ' ') }} 
+      />
+    ) : (
+      <p className="italic text-gray-400">Jawaban FAQ kosong.</p>
+    )}
+  </div>
+</div>
 
           </div>
         ) : (
